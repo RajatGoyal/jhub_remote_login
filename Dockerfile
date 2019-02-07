@@ -1,6 +1,6 @@
 FROM jupyterhub/jupyterhub:0.9.2
 
-ADD jhubauthenticators /app/jhubauthenticators
+ADD jhub_remote_login /app/jhub_remote_login
 ADD setup.py /app/setup.py
 ADD version.py /app/version.py
 ADD requirements.txt /app/requirements.txt
