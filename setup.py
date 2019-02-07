@@ -11,6 +11,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from setuptools import setup
 
@@ -24,21 +25,18 @@ with open(pjoin(here, 'version.py')) as f:
 
 long_description = open('README.rst').read()
 
-setup(
-    name='jhub-authenticators',
+setup_args = dict(
+    name='jhub_remote_login',
+    packages=['jhub_remote_login'],
     version=version_ns['__version__'],
+    description="""REMOTE_USER Authenticator: An Authenticator for Jupyterhub to read user information from HTTP request headers, as when running behind an authenticating proxy. Based on https://github.com/cwaldbieser/jhub_remote_user_authenticator and https://github.com/rasmunk/jhub-authenticators""",  # noqa
     long_description=long_description,
-    author="Rasmus Munk",
-    author_email="munk1@live.dk",
-    packages=['jhubauthenticators'],
-    url="https://github.com/rasmunk/jhub-authenticators",
+    author="Juan Cruz-Benito",
+    author_email="juan.cruz@ibm.com",
+    url="https://github.com/cbjuan/jhub_remote_login",
     license="GPLv3",
     platforms="Linux, Mac OS X",
     keywords=['Interactive', 'Interpreter', 'Shell', 'Web'],
-    install_requires=[
-        'jupyterhub>=0.9.2',
-        'docutils>=0.14'
-    ],
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -48,3 +46,16 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 )
+
+# setuptools requirements
+if 'setuptools' in sys.modules:
+    setup_args['install_requires'] = install_requires = []
+    install_requires.append('jupyterhub')
+
+
+def main():
+    setup(**setup_args)
+
+
+if __name__ == '__main__':
+    main()

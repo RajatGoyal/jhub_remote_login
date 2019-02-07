@@ -77,8 +77,8 @@ class RemoteUserLoginHandler(BaseHandler):
     def prepare(self):
         """ login user """
         if self.get_current_user() is not None:
-            self.log.info("User: {} is already authenticated"
-                          .format(self.get_current_user(), self.get_current_user().name))
+            self.log.info(
+                f"User: {self.get_current_user()}:{self.get_current_user().name} is already authenticated")
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
             user_data = extract_headers(self.request, self.authenticator.auth_headers)

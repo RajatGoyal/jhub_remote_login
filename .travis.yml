@@ -1,24 +1,77 @@
 sudo: required
 services: docker
 language: python
-python: '3.6'
+python:
+  - 3.6
+  - "nightly"
+notifications:
+  email:
+    recipients:
+      - juan.cruz@ibm.com
+    on_success: never
+    on_failure: always
+before_install:
+  - pip install --upgrade pip
+  - pip install pycodestyle
+  - pip install autopep8==1.3.5
 install:
-- docker pull jupyterhub/jupyterhub:0.9.2
-- pip install -r tests/requirements.txt
+  - docker pull jupyterhub/jupyterhub:0.9.2
+  - pip install -r tests/requirements.txt
+  - pip install twine
 script:
-- python setup.py check -rms
-- flake8
-- pytest
+  - python setup.py check -rms
+
+  # Run pep8 (pycodestyle) on all .py files in all subfolders
+  # We must ignore E402 module level import not at top of file
+  # because of use case sys.path.append('..'); import <module>
+  - num_errors_before=`find . -name \*.py -exec pycodestyle --ignore=E402 {} + | wc -l`
+  - echo $num_errors_before
+
+  - cd "$TRAVIS_BUILD_DIR"
+  - git config --global user.email "juan.cruz@ibm.com"
+  # From https://help.github.com/articles/setting-your-username-in-git/:
+  # "Tip: You don't have to use your real name--any name works. Git
+  # actually associates commits by email address; the username is only
+  # used for identification. If you use your email address associated
+  # with a GitHub account, we'll use your GitHub username, instead of
+  # this name.
+  - git config --global user.name "Travis CI"
+  - git checkout $TRAVIS_BRANCH
+  - git pull --rebase # resolve conflicts here
+
+  - find . -name \*.py -exec autopep8 --recursive --aggressive --in-place {} +
+  - num_errors_after=`find . -name \*.py -exec pycodestyle --ignore=E402 {} + | wc -l`
+  - echo $num_errors_after
+
+  - |
+    if (( $num_errors_after < $num_errors_before )); then
+        git commit -a -m "PEP8 Fix"
+        git config --global push.default simple # Push only to the current branch.
+        git remote set-url origin https://${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git/
+        # Make sure to make the output quiet, or else the API token will
+        # leak!  This works because the API key can replace your password.
+        git push --quiet
+    fi
+  - cd "$TRAVIS_BUILD_DIR"
+  # List the remaining errors - these will have to be fixed manually
+  - find . -name \*.py -exec pycodestyle --ignore=E402,W504,W605 {} +
+
+  - flake8
+  - pytest
+
 deploy:
-  skip_cleanup: true
-  distributions: sdist bdist_wheel
-  provider: pypi
-  user: rasmunk
-  password:
-    secure: AnHZHER3FZHJwJk0/r+pJOLPrZquz38ZfVAoPwiXOkNtEOK0ifnU6c+Uajq3euW+FFFLfA3+chOeHfUyNvR9ExVjMWxUVGPlNPRBo7Df691IOiU7eQQdO06UbJVlmkCBnLorOS0xgeGkwHPGjos01QJN7lJfSD3o6nGixLtXJ1cVRq8NQ+xbqhFADzkLIYFqWH0298Xs0pYU6BwYArOhbqu7EuqnSHyxF2phPEis6ybzrQvhkAvUQiw5n3gVsqVc6XFI3pK7AFIYNtdBuaODCwcRVf3DxdCAvSlhUGW7lQsD6qjLxJ7A4A48MkyJ/HPJPxwwtqcv2WvCLP0Gux6DemSOPJkNrYigX+ZOSj/F4Z7qgD4CcIU/UjKgSTxGREcAbLdr7x1mWCPGXWRTtodXXANQ0ORLZTlaY5Y7/A0vMa0N+vHQMxzmHdIR9uyIHoSlA1CcLfTmal6jFzmL87s0yvwZlVPU2I7ifHJ2TvgP42atnUcdv1CvkMtvcCykNMY0XaS+Da2u61YRHzPoyUuUmMyrUuQ4XXHCcsfOXu7L31pjC319wink+DHsp/AE8EqNhhSyXMlrS5vZ9QBXBS+7fdpC8kUzgeevcFimR/+LhDPYTxepnK1q0AX+kz8oGFpTKhcicyMHTMzIKCRYt5hMoevKqPEnXb33+HoPdjrTsgI=
-  on:
-    tags: true
-    branch: master
-    python: '3.6'
-notifications: 
-  slack: raz-s:se1PurXsQJv03nBZa9XWMOOS
+  - provider: script
+    skip_existing: true
+    user: juancb
+    password:
+      secure: LVfRltU6NuMpE9P8XGXPi0W+MittHb1DVyZLG5bdPAomrhLgVbuKWnL6cvLJ4qwvO7cPJ7tz2zVW6+fcTaaOlRuVju7KmjaXdjBFMHsGKCKxvAA6ZLVzl8H5DQpAhsK39mJ8QXLea1wPSLk+xmMb9IbLnkC0ANi5BsHjuHnMSkjIRZCb1+Eh1dxPiWYjZbs4YSHeXOfDMBBt7OJk901mQtGAUJyq5WiWxSTKYJBuuIUCVn9X/bMyVpBCSheBds1N2W50UzzKVpzItCABSzCNVeDJgFN8hsJyiDnXd5dH+urK7ypVjmeYPHdF3f0khuENKpS3zN78kCSHdBpudsca1Pd7XDBtCJVi1jHf64ly9hr1XuxDqWwxWpjYHlDsj2qb+QInTwRBHGkvG4SsYJPuR8rvb3xHr+WCGVNoZTK0GWxmZF9GAFS9CQ5JbW1B65zHKHPOJKNUfZraSSF5hB4q5Csy/yIEbfVr7K79I+APkQFuyLy+kbCow3++jPLLAHh0fXAM0m+PC8I1EUmAGbDLWzRp0alTCh8DAOY6vXiBX8XbB7gRImL4gk7bJxMMl85UDf+LYG+kSl9vvJ4A/j6qfxUlI/eFhVmQ8tCyLuvYqSGQhd0u/ENynZMW5TTTM7RiioMaFu+fTrblXag/2CRM4rdo+aEWDI6N7SYjMoxbFZA=
+    script:
+      - pip install .
+      - python setup.py sdist bdist_wheel
+      - twine upload dist/*
+      - rm -r dist/
+    on:
+      repo: cbjuan/jhub_remote_login
+      branch: master
+      tags: true
+      python: 3.6
