@@ -23,7 +23,8 @@ docker_config_path = join(dirname(realpath(__file__)), 'configs',
 jhub_image = {'path': docker_path, 'tag': IMAGE,
               'rm': 'True', 'pull': 'True'}
 
-rand_key = ''.join(SystemRandom().choice("0123456789abcdef") for _ in range(32))
+rand_key = ''.join(SystemRandom().choice("0123456789abcdef")
+                   for _ in range(32))
 
 # container cmd
 jhub_cont = {'image': IMAGE, 'name': IMAGE_NAME,

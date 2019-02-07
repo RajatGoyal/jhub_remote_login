@@ -100,7 +100,7 @@ class DataHandler(BaseHandler):
     """
     If the request is properly authenticated, check for a valid HTTP header,
     Excepts a string structure that can be interpreted by the ast module.
-    If valid the passed information is appended to the authenticated user's 
+    If valid the passed information is appended to the authenticated user's
     state data dictionary where the header name is used as the key value.
     """
 
