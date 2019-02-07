@@ -2,6 +2,12 @@
 CHANGELOG
 =========
 
+-----
+0.2.5
+-----
+
+* Juan Cruz-Benito <juan.cruz@ibm.com> : Fixing auth_headers errors and adding minor improvements
+
 
 -----
 0.2.4
