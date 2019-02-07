@@ -61,7 +61,7 @@ script:
 
 deploy:
   - provider: script
-    skip_existing: true
+    skip_cleanup: true
     user: juancb
     password:
       secure: LVfRltU6NuMpE9P8XGXPi0W+MittHb1DVyZLG5bdPAomrhLgVbuKWnL6cvLJ4qwvO7cPJ7tz2zVW6+fcTaaOlRuVju7KmjaXdjBFMHsGKCKxvAA6ZLVzl8H5DQpAhsK39mJ8QXLea1wPSLk+xmMb9IbLnkC0ANi5BsHjuHnMSkjIRZCb1+Eh1dxPiWYjZbs4YSHeXOfDMBBt7OJk901mQtGAUJyq5WiWxSTKYJBuuIUCVn9X/bMyVpBCSheBds1N2W50UzzKVpzItCABSzCNVeDJgFN8hsJyiDnXd5dH+urK7ypVjmeYPHdF3f0khuENKpS3zN78kCSHdBpudsca1Pd7XDBtCJVi1jHf64ly9hr1XuxDqWwxWpjYHlDsj2qb+QInTwRBHGkvG4SsYJPuR8rvb3xHr+WCGVNoZTK0GWxmZF9GAFS9CQ5JbW1B65zHKHPOJKNUfZraSSF5hB4q5Csy/yIEbfVr7K79I+APkQFuyLy+kbCow3++jPLLAHh0fXAM0m+PC8I1EUmAGbDLWzRp0alTCh8DAOY6vXiBX8XbB7gRImL4gk7bJxMMl85UDf+LYG+kSl9vvJ4A/j6qfxUlI/eFhVmQ8tCyLuvYqSGQhd0u/ENynZMW5TTTM7RiioMaFu+fTrblXag/2CRM4rdo+aEWDI6N7SYjMoxbFZA=
