@@ -209,7 +209,7 @@ class DataRemoteUserAuthenticator(RemoteUserAuthenticator):
         # Login
         real_name = data['Remote-User'].lower()
         # Make it alphanumeric
-        pattern = re.compile('[\W_]+', re.UNICODE)
+        pattern = re.compile(r'[\W_]+', re.UNICODE)
         real_name = pattern.sub('', real_name)
         encoded_name = safeinput_encode(real_name)
 
