@@ -83,7 +83,7 @@ class RemoteUserLoginHandler(BaseHandler):
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
             user_data = extract_headers(self.request,
-                                        self.authenticator.auth_headers)
+                                        self.authenticator.header_name)
             if 'Remote-User' not in user_data:
                 raise web.HTTPError(401,
                                     "You are not Authenticated to do this")
