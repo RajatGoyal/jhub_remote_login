@@ -98,7 +98,7 @@ user.data[Header] = HeaderValue
 The extended authenticator can be activated by setting the following option in the
 jupyterhub config file::
 
-    c.JupyterHub.authenticator_class = 'jhubauthenticators.DataRemoteUserAuthenticator'
+    c.JupyterHub.authenticator_class = 'jhub_remote_login.DataRemoteUserAuthenticator'
     # Making 'State' a valid header to pass to /data
     c.DataRemoteUserAuthenticator.data_headers = ['State']
 
