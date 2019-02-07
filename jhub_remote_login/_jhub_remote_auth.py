@@ -41,7 +41,7 @@ def safeinput_decode(input_str):
 
 def extract_headers(request, headers):
     user_data = {}
-    for i, header in enumerate(headers):
+    for _, header in enumerate(headers):
         value = request.headers.get(header, "")
         if value:
             try:
