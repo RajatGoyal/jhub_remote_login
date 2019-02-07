@@ -78,12 +78,15 @@ class RemoteUserLoginHandler(BaseHandler):
         """ login user """
         if self.get_current_user() is not None:
             self.log.info(
-                f"User: {self.get_current_user()}:{self.get_current_user().name} is already authenticated")
+                f"User: {self.get_current_user()}:"
+                "{self.get_current_user().name} is already authenticated")
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
-            user_data = extract_headers(self.request, self.authenticator.auth_headers)
+            user_data = extract_headers(self.request,
+                                        self.authenticator.auth_headers)
             if 'Remote-User' not in user_data:
-                raise web.HTTPError(401, "You are not Authenticated to do this")
+                raise web.HTTPError(401,
+                                    "You are not Authenticated to do this")
             yield self.login_user(user_data)
 
             argument = self.get_argument("next", None, True)
@@ -97,8 +100,8 @@ class DataHandler(BaseHandler):
     """
     If the request is properly authenticated, check for a valid HTTP header,
     Excepts a string structure that can be interpreted by the ast module.
-    If valid the passed information is appended to the authenticated user's state data
-    dictionary where the header name is used as the key value.
+    If valid the passed information is appended to the authenticated user's 
+    state data dictionary where the header name is used as the key value.
     """
 
     @web.authenticated
