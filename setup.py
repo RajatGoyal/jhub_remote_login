@@ -46,7 +46,7 @@ setup_args = dict(
         'Programming Language :: Python :: 3',
     ],
 )
-
+'''
 # setuptools requirements
 if 'setuptools' in sys.modules:
     setup_args['install_requires'] = install_requires = []
@@ -59,3 +59,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+'''
