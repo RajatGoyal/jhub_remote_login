@@ -79,7 +79,7 @@ class RemoteUserLoginHandler(BaseHandler):
         if self.get_current_user() is not None:
             self.log.info(
                 f"User: {self.get_current_user()}:"
-                "{self.get_current_user().name} is already authenticated")
+                f"{self.get_current_user().name} is already authenticated")
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
             user_data = extract_headers(self.request,
@@ -119,13 +119,11 @@ class DataHandler(BaseHandler):
                 evaled_data = literal_eval(d)
             except ValueError as err:
                 msg = "Failed to interpret the data header"
-                self.log.error("User: {} - {}-{}-{}".format(
-                    user, d, msg, err))
+                self.log.error(f"User: {user} - {d}-{msg}-{err}")
                 raise web.HTTPError(403, msg)
 
-            self.log.info("User: {}-{} Accepted data header: {}".format(
-                user, user.name, evaled_data
-            ))
+            self.log.info(
+                f"User: {user}-{user.name} Accepted data header: {evaled_data}")
 
             if not hasattr(user, 'data'):
                 user.data = {}
