@@ -4,6 +4,12 @@ CHANGELOG
 
 
 -----
+0.2.4
+-----
+
+* Juan Cruz-Benito <juan.cruz@ibm.com> : Updating the repo to use as basis the https://github.com/rasmunk/jhub-authenticators. Merging code
+
+-----
 0.2.3
 -----
 
