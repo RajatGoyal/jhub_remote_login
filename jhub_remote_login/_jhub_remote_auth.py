@@ -138,7 +138,8 @@ class RemoteUserAuthenticator(Authenticator):
                 return None
 
         # data[0] should be the key which contains the encrypted username
-        # data[1] should be the key which contains the key to decrypt the real username
+        # data[1] should be the key which contains the key to decrypt the real
+        # username
         user = {
             'name': data[0],
             'auth_state': {
@@ -183,7 +184,8 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
                 return None
 
         # data[0] should be the key which contains the encrypted username
-        # data[1] should be the key which contains the key to decrypt the real username
+        # data[1] should be the key which contains the key to decrypt the real
+        # username
         user = {
             'name': data[0],
             'auth_state': {
