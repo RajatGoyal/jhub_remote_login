@@ -87,16 +87,18 @@ class RemoteUserLoginHandler(BaseHandler):
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
             user_auth = extract_headers(self.request,
-                                        self.authenticator.header_name)
+                                        self.authenticator.header_names)
             self.log.info(
                 f"self.authenticator.header_name -> "
-                f"{self.authenticator.header_name}")
+                f"{self.authenticator.header_names}")
             self.log.info(f"user_data -> {user_auth}")
             self.log.info(f"self.request -> {self.request}")
             self.log.info(f"self.request.headers -> {self.request.headers}")
-            if 'Remote-User' not in user_auth:
-                raise web.HTTPError(401,
-                                    "You are not Authenticated to do this")
+
+            for item in self.authenticator.header_names:
+                if item not in user_auth:
+                    raise web.HTTPError(401,
+                                        "You are not Authenticated to do this")
             yield self.login_user(user_auth)
 
             argument = self.get_argument("next", None, True)
@@ -106,49 +108,11 @@ class RemoteUserLoginHandler(BaseHandler):
                 self.redirect(url_path_join(self.hub.server.base_url, 'home'))
 
 
-'''
-class DataHandler(BaseHandler):
-    """
-    If the request is properly authenticated, check for a valid HTTP header,
-    Excepts a string structure that can be interpreted by the ast module.
-    If valid the passed information is appended to the authenticated user's
-    state data dictionary where the header name is used as the key value.
-    """
-
-    @web.authenticated
-    @gen.coroutine
-    def post(self):
-        user_data = extract_headers(self.request,
-                                    self.authenticator.data_headers)
-        if not user_data:
-            raise web.HTTPError(403, "No valid data header was received")
-
-        user = self.get_current_user()
-        for k, d in user_data.items():
-            # Try to parse the passed information into a valid dtype
-            try:
-                evaled_data = literal_eval(d)
-            except ValueError as err:
-                msg = "Failed to interpret the data header"
-                self.log.error(f"User: {user} - {d}-{msg}-{err}")
-                raise web.HTTPError(403, msg)
-
-            self.log.info(
-                f"User: {user}-{user.name} "
-                f"Accepted data header: {evaled_data}")
-
-            if not hasattr(user, 'data'):
-                user.data = {}
-            user.data[k] = evaled_data
-        self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-'''
-
-
 class RemoteUserAuthenticator(Authenticator):
     """
     Accept the authenticated user name from the Remote-User HTTP header.
     """
-    header_name = List(
+    header_names = List(
         default_value=['Remote-User', 'Encr-Key'],
         config=True,
         help="""HTTP headers to inspect for the username and encryption key"""
@@ -160,9 +124,18 @@ class RemoteUserAuthenticator(Authenticator):
             (r'/logout', RemoteUserLogoutHandler)
         ]
 
+    '''
     @gen.coroutine
     def authenticate(self, *args):
         raise NotImplementedError()
+    '''
+    @gen.coroutine
+    def authenticate(self, handler, data):
+        for item in self.authenticator.header_names:
+            if item not in data:
+                self.log.info(f"A '{item}' header is required"
+                              f" for authentication")
+                return None
 
 
 class RemoteUserLocalAuthenticator(LocalAuthenticator):
@@ -171,7 +144,7 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
     Derived from LocalAuthenticator for use of features such as adding
     local accounts through the admin interface.
     """
-    header_name = List(
+    header_names = List(
         default_value=['Remote-User', 'Encr-Key'],
         config=True,
         help="""HTTP headers to inspect for the username and encryption key"""
@@ -183,9 +156,18 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
             (r'/logout', RemoteUserLogoutHandler)
         ]
 
+    '''
     @gen.coroutine
     def authenticate(self, *args):
         raise NotImplementedError()
+    '''
+    @gen.coroutine
+    def authenticate(self, handler, data):
+        for item in self.authenticator.header_names:
+            if item not in data:
+                self.log.info(f"A '{item}' header is required"
+                              f" for authentication")
+                return None
 
 
 '''
