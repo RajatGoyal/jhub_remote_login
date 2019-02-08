@@ -88,13 +88,6 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             user_auth = extract_headers(self.request,
                                         self.authenticator.header_names)
-            self.log.info(
-                f"self.authenticator.header_name -> "
-                f"{self.authenticator.header_names}")
-            self.log.info(f"user_data -> {user_auth}")
-            self.log.info(f"self.request -> {self.request}")
-            self.log.info(f"self.request.headers -> {self.request.headers}")
-
             for item in self.authenticator.header_names:
                 if item not in user_auth:
                     raise web.HTTPError(401,
