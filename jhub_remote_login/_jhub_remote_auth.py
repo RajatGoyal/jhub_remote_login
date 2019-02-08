@@ -95,9 +95,14 @@ class RemoteUserLoginHandler(BaseHandler):
             yield self.login_user(user_auth)
 
             argument = self.get_argument("next", None, True)
+            self.log.info(f"argument prepare -> {argument}")
             if argument is not None:
+                self.log.info(f"redirect argument -> {argument}")
                 self.redirect(argument)
             else:
+                self.log.info(
+                    f"redirect home -> "
+                    f"{url_path_join(self.hub.server.base_url, 'home')}")
                 self.redirect(url_path_join(self.hub.server.base_url, 'home'))
 
 
@@ -132,6 +137,17 @@ class RemoteUserAuthenticator(Authenticator):
                               f" for authentication")
                 return None
 
+        # data[0] should be the key which contains the encrypted username
+        # data[1] should be the key which contains the key to decrypt the real username
+        user = {
+            'name': data[0],
+            'auth_state': {
+                'encryption-key': data[1]
+            }
+        }
+        self.log.info("Authenticated: {} - Login".format(user))
+        return user
+
 
 class RemoteUserLocalAuthenticator(LocalAuthenticator):
     """
@@ -165,6 +181,17 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
                 self.log.info(f"A '{item}' header is required"
                               f" for authentication")
                 return None
+
+        # data[0] should be the key which contains the encrypted username
+        # data[1] should be the key which contains the key to decrypt the real username
+        user = {
+            'name': data[0],
+            'auth_state': {
+                'encryption-key': data[1]
+            }
+        }
+        self.log.info("Authenticated: {} - Login".format(user))
+        return user
 
 
 '''
