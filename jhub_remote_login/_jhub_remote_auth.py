@@ -131,7 +131,9 @@ class RemoteUserAuthenticator(Authenticator):
     '''
     @gen.coroutine
     def authenticate(self, handler, data):
-        for item in self.authenticator.header_names:
+        self.log.info(f"data auth -> {data}")
+        self.log.info(f"self.header_names auth -> {self.header_names}")
+        for item in self.header_names:
             if item not in data:
                 self.log.info(f"A '{item}' header is required"
                               f" for authentication")
@@ -163,7 +165,9 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
     '''
     @gen.coroutine
     def authenticate(self, handler, data):
-        for item in self.authenticator.header_names:
+        self.log.info(f"data auth -> {data}")
+        self.log.info(f"self.header_names auth -> {self.header_names}")
+        for item in self.header_names:
             if item not in data:
                 self.log.info(f"A '{item}' header is required"
                               f" for authentication")
