@@ -137,13 +137,14 @@ class RemoteUserAuthenticator(Authenticator):
                               f" for authentication")
                 return None
 
-        # data[0] should be the key which contains the encrypted username
-        # data[1] should be the key which contains the key to decrypt the real
-        # username
+        # data['Remote-User'] should be the key which contains
+        # the encrypted username
+        # data['Encr-Key'] should be the key which contains
+        # the key to decrypt the real username
         user = {
-            'name': data[0],
+            'name': data['Remote-User'],
             'auth_state': {
-                'encryption-key': data[1]
+                'encryption-key': data['Encr-Key']
             }
         }
         self.log.info("Authenticated: {} - Login".format(user))
@@ -183,13 +184,14 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
                               f" for authentication")
                 return None
 
-        # data[0] should be the key which contains the encrypted username
-        # data[1] should be the key which contains the key to decrypt the real
-        # username
+        # data['Remote-User'] should be the key which contains
+        # the encrypted username
+        # data['Encr-Key'] should be the key which contains
+        # the key to decrypt the real username
         user = {
-            'name': data[0],
+            'name': data['Remote-User'],
             'auth_state': {
-                'encryption-key': data[1]
+                'encryption-key': data['Encr-Key']
             }
         }
         self.log.info("Authenticated: {} - Login".format(user))
