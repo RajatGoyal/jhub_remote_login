@@ -122,11 +122,6 @@ class RemoteUserAuthenticator(Authenticator):
             (r'/logout', RemoteUserLogoutHandler)
         ]
 
-    '''
-    @gen.coroutine
-    def authenticate(self, *args):
-        raise NotImplementedError()
-    '''
     @gen.coroutine
     def authenticate(self, handler, data):
         self.log.info(f"data auth -> {data}")
@@ -169,11 +164,6 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
             (r'/logout', RemoteUserLogoutHandler)
         ]
 
-    '''
-    @gen.coroutine
-    def authenticate(self, *args):
-        raise NotImplementedError()
-    '''
     @gen.coroutine
     def authenticate(self, handler, data):
         self.log.info(f"data auth -> {data}")
