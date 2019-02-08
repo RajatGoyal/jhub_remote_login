@@ -8,7 +8,7 @@ from tornado import gen, web
 from traitlets import Unicode, List
 from ast import literal_eval
 
-
+'''
 def safeinput_encode(input_str):
     """
     :param input_str: string
@@ -37,6 +37,7 @@ def safeinput_decode(input_str):
         decode_str = input_str
 
     return str(b32decode(bytes(decode_str, 'utf-8')), 'utf-8')
+'''
 
 
 def extract_headers(request, headers):
@@ -51,6 +52,7 @@ def extract_headers(request, headers):
     return user_data
 
 
+'''
 class PartialBaseURLHandler(BaseHandler):
     """
     Fix against /base_url requests are not redirected to /base_url/home
@@ -59,6 +61,7 @@ class PartialBaseURLHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         self.redirect(url_path_join(self.hub.server.base_url, 'home'))
+'''
 
 
 class RemoteUserLogoutHandler(BaseHandler):
@@ -82,12 +85,18 @@ class RemoteUserLoginHandler(BaseHandler):
                 f"{self.get_current_user().name} is already authenticated")
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
-            user_data = extract_headers(self.request,
+            user_auth = extract_headers(self.request,
                                         self.authenticator.header_name)
-            if 'Remote-User' not in user_data:
+            self.log.info(
+                f"self.authenticator.header_name -> "
+                f"{self.authenticator.header_name}")
+            self.log.info(f"user_data -> {user_auth}")
+            self.log.info(f"self.request -> {self.request}")
+            self.log.info(f"self.request.headers -> {self.request.headers}")
+            if 'Remote-User' not in user_auth:
                 raise web.HTTPError(401,
                                     "You are not Authenticated to do this")
-            yield self.login_user(user_data)
+            yield self.login_user(user_auth)
 
             argument = self.get_argument("next", None, True)
             if argument is not None:
@@ -96,6 +105,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 self.redirect(url_path_join(self.hub.server.base_url, 'home'))
 
 
+'''
 class DataHandler(BaseHandler):
     """
     If the request is properly authenticated, check for a valid HTTP header,
@@ -129,16 +139,17 @@ class DataHandler(BaseHandler):
                 user.data = {}
             user.data[k] = evaled_data
         self.redirect(url_path_join(self.hub.server.base_url, 'home'))
+'''
 
 
 class RemoteUserAuthenticator(Authenticator):
     """
     Accept the authenticated user name from the Remote-User HTTP header.
     """
-    header_name = Unicode(
-        default_value='Remote-User',
+    header_name = List(
+        default_value=['Remote-User', 'Encr-Key'],
         config=True,
-        help="""HTTP header to inspect for the authenticated username.""")
+        help="""HTTP headers to inspect for the username and encryption key.""")
 
     def get_handlers(self, app):
         return [
@@ -157,10 +168,10 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
     Derived from LocalAuthenticator for use of features such as adding
     local accounts through the admin interface.
     """
-    header_name = Unicode(
-        default_value='Remote-User',
+    header_name = List(
+        default_value=['Remote-User', 'Encr-Key'],
         config=True,
-        help="""HTTP header to inspect for the authenticated username.""")
+        help="""HTTP headers to inspect for the username and encryption key.""")
 
     def get_handlers(self, app):
         return [
@@ -173,6 +184,7 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
         raise NotImplementedError()
 
 
+'''
 class DataRemoteUserAuthenticator(RemoteUserAuthenticator):
     """
     An Authenticator that supports dynamic header information
@@ -232,3 +244,4 @@ class DataRemoteUserAuthenticator(RemoteUserAuthenticator):
             user.real_name = auth_state['real_name']
             self.log.debug("Pre-Spawn: {} set user real_name {}".format(
                 user, user.real_name))
+'''
