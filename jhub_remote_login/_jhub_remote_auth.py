@@ -150,7 +150,8 @@ class RemoteUserAuthenticator(Authenticator):
     header_name = List(
         default_value=['Remote-User', 'Encr-Key'],
         config=True,
-        help="""HTTP headers to inspect for the username and encryption key.""")
+        help="""HTTP headers to inspect for the username and encryption key"""
+    )
 
     def get_handlers(self, app):
         return [
@@ -172,7 +173,8 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
     header_name = List(
         default_value=['Remote-User', 'Encr-Key'],
         config=True,
-        help="""HTTP headers to inspect for the username and encryption key.""")
+        help="""HTTP headers to inspect for the username and encryption key"""
+    )
 
     def get_handlers(self, app):
         return [
