@@ -133,7 +133,8 @@ class DataHandler(BaseHandler):
                 raise web.HTTPError(403, msg)
 
             self.log.info(
-                f"User: {user}-{user.name} Accepted data header: {evaled_data}")
+                f"User: {user}-{user.name} "
+                f"Accepted data header: {evaled_data}")
 
             if not hasattr(user, 'data'):
                 user.data = {}
