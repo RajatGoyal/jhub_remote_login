@@ -78,6 +78,8 @@ class RemoteUserLoginHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         """ login user """
+        self.log.info(f"self.get_current_user() -> "
+                      f"{self.get_current_user()}")
         if self.get_current_user() is not None:
             self.log.info(
                 f"User: {self.get_current_user()}:"
@@ -88,8 +90,6 @@ class RemoteUserLoginHandler(BaseHandler):
                                         self.authenticator.header_names)
             for item in self.authenticator.header_names:
                 if item not in user_auth:
-                    self.log.info(
-                        f"ERROR 401 You are not Authenticated to do this")
                     raise web.HTTPError(401,
                                         "You are not Authenticated to do this")
             yield self.login_user(user_auth)
