@@ -76,7 +76,7 @@ class RemoteUserLogoutHandler(BaseHandler):
 class RemoteUserLoginHandler(BaseHandler):
 
     @gen.coroutine
-    async def get(self):
+    def get(self):
         """ login user """
         if self.get_current_user() is not None:
             self.log.info(
