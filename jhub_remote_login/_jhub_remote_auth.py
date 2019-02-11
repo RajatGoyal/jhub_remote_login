@@ -142,7 +142,7 @@ class RemoteUserAuthenticator(Authenticator):
                 'encryption-key': data['Encr-Key']
             }
         }
-        self.log.info(f"Authenticating: {user} - Login")
+        self.log.info(f"Authenticating: {user['name']} - Login")
         return user
 
 
