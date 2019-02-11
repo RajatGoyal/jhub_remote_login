@@ -53,7 +53,6 @@ def extract_headers(request, headers):
     return user_data
 
 
-'''
 class PartialBaseURLHandler(BaseHandler):
     """
     Fix against /base_url requests are not redirected to /base_url/home
@@ -62,7 +61,6 @@ class PartialBaseURLHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-'''
 
 
 class RemoteUserLogoutHandler(BaseHandler):
@@ -78,7 +76,7 @@ class RemoteUserLogoutHandler(BaseHandler):
 class RemoteUserLoginHandler(BaseHandler):
 
     @gen.coroutine
-    def prepare(self):
+    async def get(self):
         """ login user """
         if self.get_current_user() is not None:
             self.log.info(
@@ -90,10 +88,10 @@ class RemoteUserLoginHandler(BaseHandler):
                                         self.authenticator.header_names)
             for item in self.authenticator.header_names:
                 if item not in user_auth:
-                    # raise web.HTTPError(401,
-                    #                     "You are not Authenticated to do this")
                     self.log.info(
-                        f"ERR 401 You are not Authenticated to do this")
+                        f"ERROR 401 You are not Authenticated to do this")
+                    raise web.HTTPError(401,
+                                        "You are not Authenticated to do this")
             yield self.login_user(user_auth)
 
             argument = self.get_argument("next", None, True)
@@ -144,7 +142,7 @@ class RemoteUserAuthenticator(Authenticator):
                 'encryption-key': data['Encr-Key']
             }
         }
-        self.log.info("Authenticated: {} - Login".format(user))
+        self.log.info(f"Authenticating: {user} - Login")
         return user
 
 
