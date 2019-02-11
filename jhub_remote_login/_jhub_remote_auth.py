@@ -92,7 +92,8 @@ class RemoteUserLoginHandler(BaseHandler):
                 if item not in user_auth:
                     # raise web.HTTPError(401,
                     #                     "You are not Authenticated to do this")
-                    self.log.info(f"ERR 401 You are not Authenticated to do this")
+                    self.log.info(
+                        f"ERR 401 You are not Authenticated to do this")
             yield self.login_user(user_auth)
 
             argument = self.get_argument("next", None, True)
