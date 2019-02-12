@@ -145,9 +145,6 @@ class RemoteUserAuthenticator(Authenticator):
         self.log.info(f"Authenticating: {user['name']} - Login")
         return user
 
-'''
-
-
 def extract_headers(request, headers):
     user_data = {}
     for _, header in enumerate(headers):
@@ -158,6 +155,7 @@ def extract_headers(request, headers):
             except KeyError:
                 pass
     return user_data
+'''
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -165,8 +163,6 @@ class RemoteUserLoginHandler(BaseHandler):
     Handler for /remotelogin
     Creates a new user with a random UUID, and auto starts their server
     """
-
-    username = None
 
     def initialize(self, force_new_server, process_user):
         super().initialize()
@@ -184,20 +180,14 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            # username = str(uuid.uuid4())
-            user_auth = extract_headers(self.request,
-                                        self.authenticator.header_names)
-            self.log.info(f"user_auth -> {user_auth}")
-            self.log.info(f"self.header_names -> {self.authenticator.header_names}")
-            try:
-                self.username = user_auth['Remote-User']
-                raw_user = self.user_from_username(self.username)
-                self.set_login_cookie(raw_user)
-            except KeyError:
-                pass
-        if raw_user:
-            user = yield gen.maybe_future(self.process_user(raw_user, self))
-            self.redirect(self.get_argument("next", user.url))
+            username = str("cbjuan")
+            # user_auth = extract_headers(self.request,
+            #                             self.authenticator.header_names)
+            #    self.username = user_auth['Remote-User']
+            raw_user = self.user_from_username(username)
+            self.set_login_cookie(raw_user)
+        user = yield gen.maybe_future(self.process_user(raw_user, self))
+        self.redirect(self.get_argument("next", user.url))
 
 
 class RemoteUserAuthenticator(Authenticator):
