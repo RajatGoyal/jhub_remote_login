@@ -156,47 +156,6 @@ class RemoteUserAuthenticator(Authenticator):
         self.log.info(f"Authenticating: {user['name']} - Login")
         return user
 
-
-class RemoteUserLocalAuthenticator(LocalAuthenticator):
-    """
-    Accept the authenticated user name from the Remote-User HTTP header.
-    Derived from LocalAuthenticator for use of features such as adding
-    local accounts through the admin interface.
-    """
-    header_names = List(
-        default_value=['Remote-User', 'Encr-Key'],
-        config=True,
-        help="""HTTP headers to inspect for the username and encryption key"""
-    )
-
-    def get_handlers(self, app):
-        return [
-            (r'/login', RemoteUserLoginHandler),
-            (r'/logout', RemoteUserLogoutHandler)
-        ]
-
-    @gen.coroutine
-    def authenticate(self, handler, data):
-        self.log.info(f"data auth -> {data}")
-        self.log.info(f"self.header_names auth -> {self.header_names}")
-        for item in self.header_names:
-            if item not in data:
-                self.log.info(f"A '{item}' header is required"
-                              f" for authentication")
-                return None
-
-        # data['Remote-User'] should be the key which contains
-        # the encrypted username
-        # data['Encr-Key'] should be the key which contains
-        # the key to decrypt the real username
-        user = {
-            'name': data['Remote-User'],
-            'auth_state': {
-                'encryption-key': data['Encr-Key']
-            }
-        }
-        self.log.info("Authenticated: {} - Login".format(user))
-        return user
 '''
 
 
