@@ -1,6 +1,6 @@
 import uuid
 
-from traitlets import Bool
+from traitlets import Bool, List
 from tornado import gen
 
 from jupyterhub.auth import Authenticator
@@ -52,17 +52,6 @@ def safeinput_decode(input_str):
 '''
 
 '''
-def extract_headers(request, headers):
-    user_data = {}
-    for _, header in enumerate(headers):
-        value = request.headers.get(header, "")
-        if value:
-            try:
-                user_data[header] = value
-            except KeyError:
-                pass
-    return user_data
-
 
 class PartialBaseURLHandler(BaseHandler):
     """
@@ -159,6 +148,18 @@ class RemoteUserAuthenticator(Authenticator):
 '''
 
 
+def extract_headers(request, headers):
+    user_data = {}
+    for _, header in enumerate(headers):
+        value = request.headers.get(header, "")
+        if value:
+            try:
+                user_data[header] = value
+            except KeyError:
+                pass
+    return user_data
+
+
 class RemoteUserLoginHandler(BaseHandler):
     """
     Handler for /remotelogin
@@ -181,8 +182,10 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            username = str(uuid.uuid4())
-            raw_user = self.user_from_username(username)
+            # username = str(uuid.uuid4())
+            user_auth = extract_headers(self.request,
+                                        self.authenticator.header_names)
+            raw_user = self.user_from_username(user_auth['Remote-User'])
             self.set_login_cookie(raw_user)
         user = yield gen.maybe_future(self.process_user(raw_user, self))
         self.redirect(self.get_argument("next", user.url))
@@ -197,7 +200,13 @@ class RemoteUserAuthenticator(Authenticator):
     """
 
     auto_login = True
-    login_service = 'tmp'
+    login_service = 'remotelogin'
+
+    header_names = List(
+        default_value=['Remote-User', 'Encr-Key'],
+        config=True,
+        help="""HTTP headers to inspect for the username and encryption key"""
+    )
 
     force_new_server = Bool(
         False,
