@@ -185,6 +185,8 @@ class RemoteUserLoginHandler(BaseHandler):
             # username = str(uuid.uuid4())
             user_auth = extract_headers(self.request,
                                         self.authenticator.header_names)
+            self.log.info(f"user_auth -> {user_auth}")
+            self.log.info(f"self.header_names -> {self.authenticator.header_names}")
             raw_user = self.user_from_username(user_auth['Remote-User'])
             self.set_login_cookie(raw_user)
         user = yield gen.maybe_future(self.process_user(raw_user, self))
