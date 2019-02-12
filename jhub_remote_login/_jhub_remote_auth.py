@@ -173,6 +173,7 @@ class RemoteUserLoginHandler(BaseHandler):
     def get(self):
         raw_user = self.get_current_user()
         if raw_user:
+            self.log.info(f"Raw user not None - init get")
             if self.force_new_server and raw_user.running:
                 # Stop user's current server if it is running
                 # so we get a new one.
@@ -181,17 +182,32 @@ class RemoteUserLoginHandler(BaseHandler):
                     yield self.stop_single_user(raw_user)
         else:
             try:
+                self.log.info(f"{self.request.headers}")
                 self.authenticator.username = self.request.headers.get('Remote-User')
+                self.log.info(
+                    f"self.request.headers.get('Remote-User') -> "
+                    f"{self.request.headers.get('Remote-User')}")
+                self.log.info(
+                    f"Setting authenticator.username -> "
+                    f"{self.authenticator.username}")
             except KeyError:
+                self.log.info(f"Key error. Username = None")
                 self.authenticator.username = None
             if self.authenticator.username:
+                self.log.info(f"Authenticator set. Trying to get username & raw user"
+                              f"{self.authenticator.username}")
                 username = str(self.authenticator.username)
+                self.log.info(f"Authenticator set. username"
+                              f"{username}")
                 # user_auth = extract_headers(self.request,
                 #                             self.authenticator.header_names)
                 #    self.username = user_auth['Remote-User']
                 raw_user = self.user_from_username(username)
+                self.log.info(f"Authenticator set. Raw user"
+                              f"{raw_user}")
                 self.set_login_cookie(raw_user)
         if raw_user:
+            self.log.info(f"Raw user not None - end get")
             user = yield gen.maybe_future(self.process_user(raw_user, self))
             self.redirect(self.get_argument("next", user.url))
 
@@ -235,6 +251,7 @@ class RemoteUserAuthenticator(Authenticator):
         This method can be a @tornado.gen.coroutine.
         Note: This is primarily for overriding in subclasses
         """
+        self.log.info(f"Process user - return user -> {user}")
         return user
 
     def get_handlers(self, app):
