@@ -170,7 +170,7 @@ class RemoteUserLoginHandler(BaseHandler):
         self.process_user = process_user
 
     @gen.coroutine
-    def get(self):
+    def post(self):
         raw_user = self.get_current_user()
         if raw_user:
             if self.force_new_server and raw_user.running:
