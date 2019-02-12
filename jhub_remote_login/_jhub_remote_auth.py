@@ -88,12 +88,10 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             user_auth = extract_headers(self.request,
                                         self.authenticator.header_names)
-            for item in self.authenticator.header_names:
-                if item not in user_auth:
-                    # raise web.HTTPError(401,
-                    #                    "You are not Authenticated to do this")
-                    self.redirect(url_path_join(
-                        self.hub.server.base_url, 'login'))
+            # for item in self.authenticator.header_names:
+            #    if item not in user_auth:
+            #        raise web.HTTPError(401,
+            #                            "You are not Authenticated to do this")
             yield self.login_user(user_auth)
 
             argument = self.get_argument("next", None, True)
