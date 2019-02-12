@@ -166,6 +166,8 @@ class RemoteUserLoginHandler(BaseHandler):
     Creates a new user with a random UUID, and auto starts their server
     """
 
+    username = ""
+
     def initialize(self, force_new_server, process_user):
         super().initialize()
         self.force_new_server = force_new_server
@@ -187,7 +189,11 @@ class RemoteUserLoginHandler(BaseHandler):
                                         self.authenticator.header_names)
             self.log.info(f"user_auth -> {user_auth}")
             self.log.info(f"self.header_names -> {self.authenticator.header_names}")
-            raw_user = self.user_from_username(user_auth['Remote-User'])
+            try:
+                self.username = user_auth['Remote-User']
+            except KeyError:
+                pass
+            raw_user = self.user_from_username(self.username)
             self.set_login_cookie(raw_user)
         user = yield gen.maybe_future(self.process_user(raw_user, self))
         self.redirect(self.get_argument("next", user.url))
