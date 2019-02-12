@@ -202,7 +202,7 @@ class RemoteUserLocalAuthenticator(LocalAuthenticator):
 
 class RemoteUserLoginHandler(BaseHandler):
     """
-    Handler for /tmplogin
+    Handler for /remotelogin
     Creates a new user with a random UUID, and auto starts their server
     """
 
@@ -243,18 +243,19 @@ class RemoteUserAuthenticator(Authenticator):
     force_new_server = Bool(
         False,
         help="""
-        Stop the user's server and start a new one when visiting /hub/tmplogin
-        When set to True, users going to /hub/tmplogin will *always* get a
+        Stop the user's server and start a new one when visiting /hub/remotelogin
+        When set to True, users going to /hub/remotelogin will *always* get a
         new single-user server. When set to False, they'll be
         redirected to their current session if one exists.
         """,
         config=True
     )
 
+    @gen.coroutine
     def process_user(self, user, handler):
         """
         Do additional arbitrary things to the created user before spawn.
-        user is a user object, and handler is a TmpAuthenticateHandler object
+        user is a user object, and handler is a RemoteUserLoginHandler object
         Should return the new user object.
         This method can be a @tornado.gen.coroutine.
         Note: This is primarily for overriding in subclasses
@@ -268,11 +269,11 @@ class RemoteUserAuthenticator(Authenticator):
             'process_user': self.process_user
         }
         return [
-            ('/tmplogin', RemoteUserLoginHandler, extra_settings)
+            ('/remotelogin', RemoteUserLoginHandler, extra_settings)
         ]
 
     def login_url(self, base_url):
-        return url_path_join(base_url, 'tmplogin')
+        return url_path_join(base_url, 'remotelogin')
 
 
 '''
