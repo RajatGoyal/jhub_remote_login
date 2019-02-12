@@ -180,7 +180,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            username = str("cbjuan")
+            username = str(self.request.headers.get('Remote-User'))
             # user_auth = extract_headers(self.request,
             #                             self.authenticator.header_names)
             #    self.username = user_auth['Remote-User']
