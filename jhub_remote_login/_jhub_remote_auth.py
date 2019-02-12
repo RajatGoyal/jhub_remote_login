@@ -194,22 +194,29 @@ class RemoteUserLoginHandler(BaseHandler):
                 self.log.info(f"Key error. Username = None")
                 self.authenticator.username = None
             if self.authenticator.username:
-                self.log.info(f"Authenticator set. Trying to get username & raw user"
-                              f"{self.authenticator.username}")
+                self.log.info(f"Authenticator set. Trying to get username & raw"
+                              f" user -> {self.authenticator.username}")
                 username = str(self.authenticator.username)
-                self.log.info(f"Authenticator set. username"
+                self.log.info(f"Authenticator set. username -> "
                               f"{username}")
                 # user_auth = extract_headers(self.request,
                 #                             self.authenticator.header_names)
                 #    self.username = user_auth['Remote-User']
                 raw_user = self.user_from_username(username)
-                self.log.info(f"Authenticator set. Raw user"
+                self.log.info(f"Authenticator set. Raw user -> "
                               f"{raw_user}")
                 self.set_login_cookie(raw_user)
         if raw_user:
             self.log.info(f"Raw user not None - end get")
             user = yield gen.maybe_future(self.process_user(raw_user, self))
             self.redirect(self.get_argument("next", user.url))
+            self.log.info(f"Raw user not None - forcing new server")
+            if self.force_new_server and raw_user.running:
+                # Stop user's current server if it is running
+                # so we get a new one.
+                status = yield raw_user.spawner.poll_and_notify()
+                if status is None:
+                    yield self.stop_single_user(raw_user)
 
 
 class RemoteUserAuthenticator(Authenticator):
