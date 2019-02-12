@@ -180,14 +180,20 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            username = str(self.request.headers.get('Remote-User'))
-            # user_auth = extract_headers(self.request,
-            #                             self.authenticator.header_names)
-            #    self.username = user_auth['Remote-User']
-            raw_user = self.user_from_username(username)
-            self.set_login_cookie(raw_user)
-        user = yield gen.maybe_future(self.process_user(raw_user, self))
-        self.redirect(self.get_argument("next", user.url))
+            try:
+                self.authenticator.username = self.request.headers.get('Remote-User')
+            except KeyError:
+                self.authenticator.username = None
+            if self.authenticator.username:
+                username = str(self.authenticator.username)
+                # user_auth = extract_headers(self.request,
+                #                             self.authenticator.header_names)
+                #    self.username = user_auth['Remote-User']
+                raw_user = self.user_from_username(username)
+                self.set_login_cookie(raw_user)
+        if raw_user:
+            user = yield gen.maybe_future(self.process_user(raw_user, self))
+            self.redirect(self.get_argument("next", user.url))
 
 
 class RemoteUserAuthenticator(Authenticator):
@@ -200,6 +206,8 @@ class RemoteUserAuthenticator(Authenticator):
 
     auto_login = True
     login_service = 'remotelogin'
+
+    username = None
 
     header_names = List(
         default_value=['Remote-User', 'Encr-Key'],
