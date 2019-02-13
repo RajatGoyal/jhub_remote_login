@@ -1,12 +1,9 @@
-# import uuid
-
 from traitlets import Bool, List
 from tornado import gen, web
-
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 # from jupyterhub.utils import url_path_join
-
+# import uuid
 # import re
 # from base64 import b32encode, b32decode
 '''
