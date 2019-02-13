@@ -48,14 +48,6 @@ def safeinput_decode(input_str):
 '''
 
 '''
-class PartialBaseURLHandler(BaseHandler):
-    """
-    Fix against /base_url requests are not redirected to /base_url/home
-    """
-    @web.authenticated
-    @gen.coroutine
-    def get(self):
-        self.redirect(url_path_join(self.hub.server.base_url, 'home'))
 class RemoteUserLogoutHandler(BaseHandler):
     @gen.coroutine
     def get(self):
@@ -188,11 +180,9 @@ class RemoteUserLoginHandler(BaseHandler):
             user = yield gen.maybe_future(self.process_user(raw_user, self))
             get_argument = self.get_argument("next", user.url)
             self.log.info(f"get argument  -> {get_argument}")
-            self.redirect(self.get_argument("next", user.url))
-            # self.redirect(
-            #    url_path_join(
-            #        self.hub.server.base_url,
-            #        f"user/{username}"))
+            # self.redirect(self.get_argument("next", user.url))
+            self.log.info(f"get_next_url  -> {self.get_next_url(user)}")
+            self.redirect(self.get_next_url(user))
 
 
 class RemoteUserAuthenticator(Authenticator):
@@ -223,7 +213,8 @@ class RemoteUserAuthenticator(Authenticator):
         config=True
     )
 
-    def process_user(self, user, handler):
+    @gen.coroutine
+    def authenticate(self, user, handler):
         """
         Do additional arbitrary things to the created user before spawn.
         user is a user object, and handler is a RemoteUserLoginHandler object
