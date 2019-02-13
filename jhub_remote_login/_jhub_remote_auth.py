@@ -157,7 +157,7 @@ class RemoteUserLoginHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         global global_username
-        self.log.info(f"setting global_username -> {global_username}")
+        self.log.info(f"global_username 1 -> {global_username}")
         raw_user = self.get_current_user()
         self.log.info(f"raw_user beginning -> {raw_user}")
         if raw_user:
@@ -168,12 +168,12 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            self.log.info(f"setting global_username 1st if -> '{str(global_username)}''")
-            if global_username is None or not global_username:
+            self.log.info(f"setting global_username 1st if -> '{str(global_username)}'")
+            if global_username is None or global_username == "":
                 global_username = self.request.headers.get("Remote-User", "")
-                self.log.info(f"setting global_username -> {global_username}")
-            self.log.info(f"setting global_username 2nd if -> '{str(global_username)}''")
-            if not global_username:
+                self.log.info(f"setting global_username 2 -> {global_username}")
+            self.log.info(f"setting global_username 2nd if -> '{str(global_username)}'")
+            if global_username is not None or global_username != "":
                 username = str(global_username).strip()
                 self.log.info(f"setting username -> {username}")
                 raw_user = self.user_from_username(username)
