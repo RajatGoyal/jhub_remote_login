@@ -173,7 +173,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 global_username = self.request.headers.get("Remote-User", "")
                 self.log.info(f"setting global_username 2 -> {global_username}")
             self.log.info(f"setting global_username 2nd if -> '{str(global_username)}'")
-            if global_username is not None or global_username != "":
+            if global_username is not None and global_username != "":
                 username = str(global_username).strip()
                 self.log.info(f"setting username -> {username}")
                 raw_user = self.user_from_username(username)
