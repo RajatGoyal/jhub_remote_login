@@ -214,7 +214,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     @gen.coroutine
-    def authenticate(self, user, handler):
+    def process_user(self, user, handler):
         """
         Do additional arbitrary things to the created user before spawn.
         user is a user object, and handler is a RemoteUserLoginHandler object
