@@ -188,11 +188,11 @@ class RemoteUserLoginHandler(BaseHandler):
             user = yield gen.maybe_future(self.process_user(raw_user, self))
             get_argument = self.get_argument("next", user.url)
             self.log.info(f"get argument  -> {get_argument}")
-            # self.redirect(self.get_argument("next", user.url))
-            self.redirect(
-                url_path_join(
-                    self.hub.server.base_url,
-                    f"user/{username}"))
+            self.redirect(self.get_argument("next", user.url))
+            # self.redirect(
+            #    url_path_join(
+            #        self.hub.server.base_url,
+            #        f"user/{username}"))
 
 
 class RemoteUserAuthenticator(Authenticator):
@@ -223,7 +223,6 @@ class RemoteUserAuthenticator(Authenticator):
         config=True
     )
 
-    @gen.coroutine
     def process_user(self, user, handler):
         """
         Do additional arbitrary things to the created user before spawn.
