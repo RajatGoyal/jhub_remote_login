@@ -188,7 +188,7 @@ class RemoteUserLoginHandler(BaseHandler):
             user = yield gen.maybe_future(self.process_user(raw_user, self))
             get_argument = self.get_argument("next", user.url)
             self.log.info(f"get argument  -> {get_argument}")
-            self.redirect(self.get_argument("next", user.url))
+            # self.redirect(self.get_argument("next", user.url))
             self.redirect(
                 url_path_join(
                     self.hub.server.base_url,
