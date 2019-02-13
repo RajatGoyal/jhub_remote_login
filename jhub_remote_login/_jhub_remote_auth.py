@@ -189,7 +189,10 @@ class RemoteUserLoginHandler(BaseHandler):
             get_argument = self.get_argument("next", user.url)
             self.log.info(f"get argument  -> {get_argument}")
             self.redirect(self.get_argument("next", user.url))
-            self.redirect(url_path_join(self.hub.server.base_url, f"user/{username}"))
+            self.redirect(
+                url_path_join(
+                    self.hub.server.base_url,
+                    f"user/{username}"))
 
 
 class RemoteUserAuthenticator(Authenticator):
