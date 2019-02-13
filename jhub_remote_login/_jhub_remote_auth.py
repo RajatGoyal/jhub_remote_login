@@ -166,14 +166,15 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            if global_username is None:
+            if global_username is None or not global_username:
                 global_username = self.request.headers.get("Remote-User", "")
                 self.log.info(f"setting global_username  -> {global_username}")
-            username = str(global_username).strip()
-            self.log.info(f"setting username  -> {username}")
-            raw_user = self.user_from_username(username)
-            self.log.info(f"setting raw_user  -> {raw_user}")
-            self.set_login_cookie(raw_user)
+            if not global_username:
+                username = str(global_username).strip()
+                self.log.info(f"setting username  -> {username}")
+                raw_user = self.user_from_username(username)
+                self.log.info(f"setting raw_user  -> {raw_user}")
+                self.set_login_cookie(raw_user)
         if raw_user:
             self.log.info(f"raw user  -> {raw_user}")
             user = yield gen.maybe_future(self.process_user(raw_user, self))
