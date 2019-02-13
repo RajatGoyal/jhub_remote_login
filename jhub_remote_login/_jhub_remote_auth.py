@@ -144,8 +144,8 @@ class RemoteUserLoginHandler(BaseHandler):
         self.force_new_server = force_new_server
         self.process_user = process_user
 
-    @gen.coroutine
-    def get(self):
+    # @gen.coroutine
+    async def get(self):
         global global_username
         self.log.info(f"global_username 1 -> {global_username}")
         raw_user = self.get_current_user()
@@ -177,7 +177,8 @@ class RemoteUserLoginHandler(BaseHandler):
                                     "You are not Authenticated to do this")
         if raw_user:
             self.log.info(f"raw user  -> {raw_user}")
-            user = yield gen.maybe_future(self.process_user(raw_user, self))
+            # user = yield gen.maybe_future(self.process_user(raw_user, self))
+            user = await self.login_user(raw_user)
             get_argument = self.get_argument("next", user.url)
             self.log.info(f"get argument  -> {get_argument}")
             # self.redirect(self.get_argument("next", user.url))
@@ -214,7 +215,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     @gen.coroutine
-    def process_user(self, user, handler):
+    def authenticate(self, user, handler):
         """
         Do additional arbitrary things to the created user before spawn.
         user is a user object, and handler is a RemoteUserLoginHandler object
@@ -222,13 +223,14 @@ class RemoteUserAuthenticator(Authenticator):
         This method can be a @tornado.gen.coroutine.
         Note: This is primarily for overriding in subclasses
         """
+        self.log.info(f"user @ authenticate -> {user}")
         return user
 
     def get_handlers(self, app):
         # FIXME: How to do this better?
         extra_settings = {
             'force_new_server': self.force_new_server,
-            'process_user': self.process_user
+            # 'process_user': self.process_user
         }
         return [
             ('/login', RemoteUserLoginHandler, extra_settings)
