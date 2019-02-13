@@ -20,6 +20,8 @@ from traitlets import List
 # from traitlets import Unicode
 # from ast import literal_eval
 
+global_username = None
+
 '''
 def safeinput_encode(input_str):
     """
@@ -147,6 +149,8 @@ class RemoteUserLoginHandler(BaseHandler):
     Creates a new user with a random UUID, and auto starts their server
     """
 
+    global global_username
+
     def initialize(self, force_new_server, process_user):
         super().initialize()
         self.force_new_server = force_new_server
@@ -163,15 +167,18 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            remote_user = self.request.headers.get("Remote-User", "")
-            username = str(remote_user).strip()
-            # user_auth = extract_headers(self.request,
-            #                             self.authenticator.header_names)
-            # self.username = user_auth['Remote-User']
+            if global_username is None:
+                global_username = self.request.headers.get("Remote-User", "")
+                self.log.info(f"setting global_username  -> {global_username}")
+            username = str(global_username).strip()
+            self.log.info(f"setting username  -> {username}")
             raw_user = self.user_from_username(username)
+            self.log.info(f"setting raw_user  -> {raw_user}")
             self.set_login_cookie(raw_user)
-        user = yield gen.maybe_future(self.process_user(raw_user, self))
-        self.redirect(self.get_argument("next", user.url))
+        if raw_user:
+            self.log.info(f"raw user  -> {raw_user}")
+            user = yield gen.maybe_future(self.process_user(raw_user, self))
+            self.redirect(self.get_argument("next", user.url))
 
 
 class RemoteUserAuthenticator(Authenticator):
