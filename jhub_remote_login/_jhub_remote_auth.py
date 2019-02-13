@@ -1,11 +1,11 @@
-import uuid
+# import uuid
 
 from traitlets import Bool, List
 from tornado import gen, web
 
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
+# from jupyterhub.utils import url_path_join
 
 # import re
 # from base64 import b32encode, b32decode
@@ -83,7 +83,8 @@ class RemoteUserLoginHandler(BaseHandler):
             # for item in self.authenticator.header_names:
             #    if item not in user_auth:
             #        raise web.HTTPError(401,
-            #                            "You are not Authenticated to do this")
+            #                            "You are not Authenticated "
+            #                            "to do this")
             yield self.login_user(user_auth)
             argument = self.get_argument("next", None, True)
             self.log.info(f"argument prepare -> {argument}")
@@ -145,7 +146,7 @@ def extract_headers(request, headers):
 
 class RemoteUserLoginHandler(BaseHandler):
     """
-    Handler for /remotelogin
+    Handler for /login
     Creates a new user with a random UUID, and auto starts their server
     """
 
@@ -211,8 +212,8 @@ class RemoteUserAuthenticator(Authenticator):
     force_new_server = Bool(
         False,
         help="""
-        Stop the user's server and start a new one when visiting /hub/remotelogin
-        When set to True, users going to /hub/remotelogin will *always* get a
+        Stop the user's server and start a new one when visiting /hub/login
+        When set to True, users going to /hub/login will *always* get a
         new single-user server. When set to False, they'll be
         redirected to their current session if one exists.
         """,
