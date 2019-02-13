@@ -168,11 +168,14 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            self.log.info(f"setting global_username 1st if -> '{str(global_username)}'")
+            self.log.info(
+                f"setting global_username 1st if -> '{str(global_username)}'")
             if global_username is None or global_username == "":
                 global_username = self.request.headers.get("Remote-User", "")
-                self.log.info(f"setting global_username 2 -> {global_username}")
-            self.log.info(f"setting global_username 2nd if -> '{str(global_username)}'")
+                self.log.info(
+                    f"setting global_username 2 -> {global_username}")
+            self.log.info(
+                f"setting global_username 2nd if -> '{str(global_username)}'")
             if global_username is not None and global_username != "":
                 username = str(global_username).strip()
                 self.log.info(f"setting username -> {username}")
