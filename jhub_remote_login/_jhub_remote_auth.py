@@ -2,7 +2,7 @@ from traitlets import Bool, List
 from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
-# from jupyterhub.utils import url_path_join
+from jupyterhub.utils import url_path_join
 # import uuid
 # import re
 # from base64 import b32encode, b32decode
@@ -189,6 +189,7 @@ class RemoteUserLoginHandler(BaseHandler):
             get_argument = self.get_argument("next", user.url)
             self.log.info(f"get argument  -> {get_argument}")
             self.redirect(self.get_argument("next", user.url))
+            self.redirect(url_path_join(self.hub.server.base_url, f"user/{username}"))
 
 
 class RemoteUserAuthenticator(Authenticator):
