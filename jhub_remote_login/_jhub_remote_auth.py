@@ -239,7 +239,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     force_new_server = Bool(
-        False,
+        True,
         help="""
         Stop the user's server and start a new one when visiting /hub/remotelogin
         When set to True, users going to /hub/remotelogin will *always* get a
