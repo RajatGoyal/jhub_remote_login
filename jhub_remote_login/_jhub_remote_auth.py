@@ -149,8 +149,6 @@ class RemoteUserLoginHandler(BaseHandler):
     Creates a new user with a random UUID, and auto starts their server
     """
 
-    global global_username
-
     def initialize(self, force_new_server, process_user):
         super().initialize()
         self.force_new_server = force_new_server
@@ -158,6 +156,7 @@ class RemoteUserLoginHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
+        global global_username
         raw_user = self.get_current_user()
         if raw_user:
             if self.force_new_server and raw_user.running:
