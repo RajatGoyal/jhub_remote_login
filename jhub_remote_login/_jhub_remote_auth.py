@@ -1,7 +1,7 @@
 import uuid
 
 from traitlets import Bool, List
-from tornado import gen
+from tornado import gen, web
 
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
@@ -179,6 +179,9 @@ class RemoteUserLoginHandler(BaseHandler):
                 raw_user = self.user_from_username(username)
                 self.log.info(f"setting raw_user -> {raw_user}")
                 self.set_login_cookie(raw_user)
+            else:
+                raise web.HTTPError(401,
+                                    "You are not Authenticated to do this")
         if raw_user:
             self.log.info(f"raw user  -> {raw_user}")
             user = yield gen.maybe_future(self.process_user(raw_user, self))
@@ -231,8 +234,8 @@ class RemoteUserAuthenticator(Authenticator):
             'process_user': self.process_user
         }
         return [
-            ('/remotelogin', RemoteUserLoginHandler, extra_settings)
+            ('/login', RemoteUserLoginHandler, extra_settings)
         ]
 
-    def login_url(self, base_url):
-        return url_path_join(base_url, 'remotelogin')
+    # def login_url(self, base_url):
+    #    return url_path_join(base_url, 'remotelogin')
