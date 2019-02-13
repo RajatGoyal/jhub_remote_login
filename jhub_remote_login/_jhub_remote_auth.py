@@ -7,7 +7,7 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 
-# import re
+# import re
 # from base64 import b32encode, b32decode
 '''
 from jupyterhub.handlers import BaseHandler
@@ -28,8 +28,6 @@ def safeinput_encode(input_str):
     """
     encoded_str = str(b32encode(bytes(input_str, 'utf-8')), 'utf-8')
     return encoded_str.replace('=', '')
-
-
 def safeinput_decode(input_str):
     """
     :param input_str: expects a b32encoded utf-8 string
@@ -47,12 +45,10 @@ def safeinput_decode(input_str):
         decode_str = "{}{}".format(input_str, padding)
     else:
         decode_str = input_str
-
     return str(b32decode(bytes(decode_str, 'utf-8')), 'utf-8')
 '''
 
 '''
-
 class PartialBaseURLHandler(BaseHandler):
     """
     Fix against /base_url requests are not redirected to /base_url/home
@@ -61,20 +57,14 @@ class PartialBaseURLHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-
-
 class RemoteUserLogoutHandler(BaseHandler):
-
     @gen.coroutine
     def get(self):
         user = self.get_current_user()
         if user:
             self.clear_login_cookie()
         self.redirect(self.hub.server.base_url)
-
-
 class RemoteUserLoginHandler(BaseHandler):
-
     @gen.coroutine
     def get(self):
         """ login user """
@@ -93,7 +83,6 @@ class RemoteUserLoginHandler(BaseHandler):
             #        raise web.HTTPError(401,
             #                            "You are not Authenticated to do this")
             yield self.login_user(user_auth)
-
             argument = self.get_argument("next", None, True)
             self.log.info(f"argument prepare -> {argument}")
             if argument is not None:
@@ -104,8 +93,6 @@ class RemoteUserLoginHandler(BaseHandler):
                     f"redirect home -> "
                     f"{url_path_join(self.hub.server.base_url, 'home')}")
                 self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-
-
 class RemoteUserAuthenticator(Authenticator):
     """
     Accept the authenticated user name from the Remote-User HTTP header.
@@ -115,13 +102,11 @@ class RemoteUserAuthenticator(Authenticator):
         config=True,
         help="""HTTP headers to inspect for the username and encryption key"""
     )
-
     def get_handlers(self, app):
         return [
             (r'/login', RemoteUserLoginHandler),
             (r'/logout', RemoteUserLogoutHandler)
         ]
-
     @gen.coroutine
     def authenticate(self, handler, data):
         self.log.info(f"data auth -> {data}")
@@ -131,7 +116,6 @@ class RemoteUserAuthenticator(Authenticator):
                 self.log.info(f"A '{item}' header is required"
                               f" for authentication")
                 return None
-
         # data['Remote-User'] should be the key which contains
         # the encrypted username
         # data['Encr-Key'] should be the key which contains
@@ -144,7 +128,6 @@ class RemoteUserAuthenticator(Authenticator):
         }
         self.log.info(f"Authenticating: {user['name']} - Login")
         return user
-
 def extract_headers(request, headers):
     user_data = {}
     for _, header in enumerate(headers):
@@ -173,7 +156,6 @@ class RemoteUserLoginHandler(BaseHandler):
     def get(self):
         raw_user = self.get_current_user()
         if raw_user:
-            self.log.info(f"Raw user not None - init get")
             if self.force_new_server and raw_user.running:
                 # Stop user's current server if it is running
                 # so we get a new one.
@@ -181,42 +163,15 @@ class RemoteUserLoginHandler(BaseHandler):
                 if status is None:
                     yield self.stop_single_user(raw_user)
         else:
-            try:
-                self.log.info(f"{self.request.headers}")
-                self.authenticator.username = self.request.headers.get('Remote-User')
-                self.log.info(
-                    f"self.request.headers.get('Remote-User') -> "
-                    f"{self.request.headers.get('Remote-User')}")
-                self.log.info(
-                    f"Setting authenticator.username -> "
-                    f"{self.authenticator.username}")
-            except KeyError:
-                self.log.info(f"Key error. Username = None")
-                self.authenticator.username = None
-            if self.authenticator.username:
-                self.log.info(f"Authenticator set. Trying to get username & raw"
-                              f" user -> {self.authenticator.username}")
-                username = str(self.authenticator.username)
-                self.log.info(f"Authenticator set. username -> "
-                              f"{username}")
-                # user_auth = extract_headers(self.request,
-                #                             self.authenticator.header_names)
-                #    self.username = user_auth['Remote-User']
-                raw_user = self.user_from_username(username)
-                self.log.info(f"Authenticator set. Raw user -> "
-                              f"{raw_user}")
-                self.set_login_cookie(raw_user)
-        if raw_user:
-            self.log.info(f"Raw user not None - end get")
-            user = yield gen.maybe_future(self.process_user(raw_user, self))
-            self.redirect(self.get_argument("next", user.url))
-            self.log.info(f"Raw user not None - forcing new server")
-            if self.force_new_server and raw_user.running:
-                # Stop user's current server if it is running
-                # so we get a new one.
-                status = yield raw_user.spawner.poll_and_notify()
-                if status is None:
-                    yield self.stop_single_user(raw_user)
+            remote_user = self.request.headers.get("Remote-User", "")
+            username = str(remote_user).strip()
+            # user_auth = extract_headers(self.request,
+            #                             self.authenticator.header_names)
+            # self.username = user_auth['Remote-User']
+            raw_user = self.user_from_username(username)
+            self.set_login_cookie(raw_user)
+        user = yield gen.maybe_future(self.process_user(raw_user, self))
+        self.redirect(self.get_argument("next", user.url))
 
 
 class RemoteUserAuthenticator(Authenticator):
@@ -230,8 +185,6 @@ class RemoteUserAuthenticator(Authenticator):
     auto_login = True
     login_service = 'remotelogin'
 
-    username = None
-
     header_names = List(
         default_value=['Remote-User', 'Encr-Key'],
         config=True,
@@ -239,7 +192,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     force_new_server = Bool(
-        True,
+        False,
         help="""
         Stop the user's server and start a new one when visiting /hub/remotelogin
         When set to True, users going to /hub/remotelogin will *always* get a
@@ -258,7 +211,6 @@ class RemoteUserAuthenticator(Authenticator):
         This method can be a @tornado.gen.coroutine.
         Note: This is primarily for overriding in subclasses
         """
-        self.log.info(f"Process user - return user -> {user}")
         return user
 
     def get_handlers(self, app):
