@@ -99,8 +99,8 @@ class RemoteUserLoginHandler(BaseHandler):
                     whitelist_pass = yield gen.maybe_future(self.authenticator.check_whitelist(username))
                     if whitelist_pass:
                         raw_user = self.user_from_username(username)
-                        self.set_login_cookie(raw_user)
                         self.clear_tmp_cookie('validation')
+                        self.set_login_cookie(raw_user)
                     else:
                         raise web.HTTPError(401,
                                             "You are not Authenticated to do this (4)")
