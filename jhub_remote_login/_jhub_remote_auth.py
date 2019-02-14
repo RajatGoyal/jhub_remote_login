@@ -157,13 +157,18 @@ def get_user_details(name):
 
 
 def get_user_from_header(header):
-    # return ''.join(random.choice(
-    #    string.ascii_lowercase + string.digits) for _ in range(n))
-    try:
-        return header.get("Remote-User", "")
-    except BaseException:
-        raise web.HTTPError(401,
-                            "You are not Authenticated to do this")
+    global global_username
+
+    if global_username is None or global_username == "":
+        username = header.get("Remote-User", "")
+        if username != "" and username is not None:
+            global_username = username
+            return username
+        else:
+            raise web.HTTPError(401,
+                                "You are not Authenticated to do this (1)")
+    else:
+        return global_username
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -187,6 +192,8 @@ class RemoteUserLoginHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
+        global global_username
+
         raw_user = self.get_current_user()
 
         if raw_user:
@@ -211,10 +218,15 @@ class RemoteUserLoginHandler(BaseHandler):
 
         else:
             username = self.generate_user()
-            raw_user = self.user_from_username(username)
-            self.set_login_cookie(raw_user)
+            if global_username is not None and global_username != "":
+                raw_user = self.user_from_username(username)
+                self.set_login_cookie(raw_user)
+            else:
+                raise web.HTTPError(401,
+                                    "You are not Authenticated to do this (2)")
 
-        user = yield gen.maybe_future(self.process_user(raw_user, self))
+        if raw_user:
+            user = yield gen.maybe_future(self.process_user(raw_user, self))
 
         self.redirect(self.get_argument("next", user.url))
 
