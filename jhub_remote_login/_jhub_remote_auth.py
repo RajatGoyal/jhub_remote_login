@@ -2,7 +2,10 @@ from traitlets import Bool, List
 from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
-# from jupyterhub.utils import url_path_join
+from jupyterhub.utils import url_path_join
+import string
+import random
+import functools
 # import uuid
 # import re
 # from base64 import b32encode, b32decode
@@ -141,6 +144,23 @@ def extract_headers(request, headers):
 '''
 
 
+class AnonymousUser(object):
+
+    def __init__(self, name):
+        self.name = name
+        self.active = False
+
+
+@functools.lru_cache(10000)
+def get_user_details(name):
+    return AnonymousUser(name)
+
+
+def generate_random_userid(n=5):
+    return ''.join(random.choice(
+        string.ascii_lowercase + string.digits) for _ in range(n))
+
+
 class RemoteUserLoginHandler(BaseHandler):
     """
     Handler for /login
@@ -152,41 +172,46 @@ class RemoteUserLoginHandler(BaseHandler):
         self.force_new_server = force_new_server
         self.process_user = process_user
 
+    def generate_user(self):
+        while True:
+            name = generate_random_userid()
+            user = get_user_details(name)
+            if not user.active:
+                user.active = True
+                return name
+
     @gen.coroutine
     def get(self):
-        global global_username
-        self.log.info(f"global_username 1 -> {global_username}")
         raw_user = self.get_current_user()
-        self.log.info(f"raw_user beginning -> {raw_user}")
+
         if raw_user:
             if self.force_new_server and raw_user.running:
-                # Stop user's current server if it is running
-                # so we get a new one.
+                # Stop the user's current terminal instance if it is
+                # running so that they get a new one. Should hopefully
+                # only end up here if have hit the /restart URL path.
+
                 status = yield raw_user.spawner.poll_and_notify()
                 if status is None:
                     yield self.stop_single_user(raw_user)
+
+                # Also force a new user name be generated so don't have
+                # issues with browser caching web pages for anything
+                # want to be able to change for a demo. Only way to do
+                # this seems to be to clear the login cookie and force a
+                # redirect back to the top of the site, hoping we do not
+                # get into a loop.
+
+                self.clear_login_cookie()
+                return self.redirect('/')
+
         else:
-            self.log.info(
-                f"setting global_username 1st if -> '{str(global_username)}'")
-            if global_username is None or global_username == "":
-                global_username = self.request.headers.get("Remote-User", "")
-                self.log.info(
-                    f"setting global_username 2 -> {global_username}")
-            self.log.info(
-                f"setting global_username 2nd if -> '{str(global_username)}'")
-            if global_username is not None and global_username != "":
-                username = str(global_username).strip()
-                self.log.info(f"setting username -> {username}")
-                raw_user = self.user_from_username(username)
-                self.log.info(f"setting raw_user -> {raw_user}")
-                self.set_login_cookie(raw_user)
-            else:
-                raise web.HTTPError(401,
-                                    "You are not Authenticated to do this")
-        if raw_user:
-            self.log.info(f"raw user  -> {raw_user}")
-            user = yield gen.maybe_future(self.process_user(raw_user, self))
-            self.redirect(self.get_argument("next", user.url))
+            username = self.generate_user()
+            raw_user = self.user_from_username(username)
+            self.set_login_cookie(raw_user)
+
+        user = yield gen.maybe_future(self.process_user(raw_user, self))
+
+        self.redirect(self.get_argument("next", user.url))
 
 
 class RemoteUserAuthenticator(Authenticator):
@@ -198,45 +223,24 @@ class RemoteUserAuthenticator(Authenticator):
     """
 
     auto_login = True
-    login_service = 'remotelogin'
+    login_service = 'auto'
 
-    header_names = List(
-        default_value=['Remote-User', 'Encr-Key'],
-        config=True,
-        help="""HTTP headers to inspect for the username and encryption key"""
-    )
+    force_new_server = True
 
-    force_new_server = Bool(
-        False,
-        help="""
-        Stop the user's server and start a new one when visiting /hub/login
-        When set to True, users going to /hub/login will *always* get a
-        new single-user server. When set to False, they'll be
-        redirected to their current session if one exists.
-        """,
-        config=True
-    )
-
-    @gen.coroutine
     def process_user(self, user, handler):
-        """
-        Do additional arbitrary things to the created user before spawn.
-        user is a user object, and handler is a RemoteUserLoginHandler object
-        Should return the new user object.
-        This method can be a @tornado.gen.coroutine.
-        Note: This is primarily for overriding in subclasses
-        """
         return user
 
     def get_handlers(self, app):
-        # FIXME: How to do this better?
         extra_settings = {
             'force_new_server': self.force_new_server,
             'process_user': self.process_user
         }
         return [
-            ('/login', RemoteUserLoginHandler, extra_settings)
+            ('/restart', RemoteUserLoginHandler, extra_settings)
         ]
 
-    # def login_url(self, base_url):
-    #    return url_path_join(base_url, 'remotelogin')
+    def login_url(self, base_url):
+        return url_path_join(base_url, 'restart')
+
+# def login_url(self, base_url):
+#    return url_path_join(base_url, 'remotelogin')
