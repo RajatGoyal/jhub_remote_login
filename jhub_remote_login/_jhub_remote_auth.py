@@ -151,7 +151,7 @@ class AnonymousUser(object):
         self.active = False
 
 
-@functools.lru_cache(10000)
+# @functools.lru_cache(10000)
 def get_user_details(name):
     return AnonymousUser(name)
 
@@ -237,11 +237,11 @@ class RemoteUserAuthenticator(Authenticator):
             'process_user': self.process_user
         }
         return [
-            ('/restart', RemoteUserLoginHandler, extra_settings)
+            ('/login', RemoteUserLoginHandler, extra_settings)
         ]
 
     def login_url(self, base_url):
-        return url_path_join(base_url, 'restart')
+        return url_path_join(base_url, 'login')
 
 # def login_url(self, base_url):
 #    return url_path_join(base_url, 'remotelogin')
