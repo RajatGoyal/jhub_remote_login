@@ -226,7 +226,16 @@ class RemoteUserAuthenticator(Authenticator):
     auto_login = True
     login_service = 'auto'
 
-    force_new_server = True
+    force_new_server = Bool(
+        False,
+        help="""
+        Stop the user's server and start a new one when visiting /hub/login
+        When set to True, users going to /hub/login will *always* get a
+        new single-user server. When set to False, they'll be
+        redirected to their current session if one exists.
+        """,
+        config=True
+    )
 
     def process_user(self, user, handler):
         return user
