@@ -41,7 +41,6 @@ class RemoteUserLoginHandler(BaseHandler):
                                 "You are not Authenticated to do this (1)")
 
     def check_header(self, key, value):
-        self.log.info(f"headers -> {self.request.headers}")
         header_value = self.request.headers.get(key, "")
         if value == header_value:
             return True
@@ -49,7 +48,6 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     def get_tmp_cookie(self, key, value):
-        self.log.info(f"cookie -> {self.get_cookie(key)}")
         if self.get_cookie(key):
             return True
         else:
@@ -60,7 +58,6 @@ class RemoteUserLoginHandler(BaseHandler):
                 return False
 
     def clear_tmp_cookie(self, key):
-        self.log.info(f"cookie -> {self.get_cookie(key)}")
         if self.get_cookie(key):
             self.clear_cookie(key)
             return True
@@ -97,7 +94,6 @@ class RemoteUserLoginHandler(BaseHandler):
                 username = self.get_username()
                 if username is not None and username != "":
                     whitelist = self.authenticator.whitelist
-                    self.log.info(f"whitelist_pass {username} -> {whitelist}")
                     if whitelist and username in whitelist:
                         raw_user = self.user_from_username(username)
                         self.clear_tmp_cookie('validation')
