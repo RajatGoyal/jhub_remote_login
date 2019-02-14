@@ -68,7 +68,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     @gen.coroutine
-    async def get(self):
+    def get(self):
 
         raw_user = self.get_current_user()
 
@@ -96,7 +96,8 @@ class RemoteUserLoginHandler(BaseHandler):
             if self.get_tmp_cookie('validation', 'ok'):
                 username = self.get_username()
                 if username is not None and username != "":
-                    if (await gen.maybe_future(self.authenticator.check_whitelist(username))):
+                    whitelist_pass = yield gen.maybe_future(self.authenticator.check_whitelist(username))
+                    if whitelist_pass:
                         raw_user = self.user_from_username(username)
                         self.set_login_cookie(raw_user)
                         self.clear_tmp_cookie('validation')
