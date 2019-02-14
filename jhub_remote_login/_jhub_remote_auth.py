@@ -40,6 +40,14 @@ class RemoteUserLoginHandler(BaseHandler):
             raise web.HTTPError(401,
                                 "You are not Authenticated to do this (1)")
 
+    def check_header(self, key, value):
+        self.log.info(f"headers -> {self.request.headers}")
+        header_value = self.request.headers.get(key, "")
+        if value == header_value:
+            return True
+        else:
+            return False
+
     @gen.coroutine
     def get(self):
 
@@ -66,13 +74,17 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            username = self.get_username()
-            if username is not None and username != "":
-                raw_user = self.user_from_username(username)
-                self.set_login_cookie(raw_user)
+            if self.check_header('validation', 'ok'):
+                username = self.get_username()
+                if username is not None and username != "":
+                    raw_user = self.user_from_username(username)
+                    self.set_login_cookie(raw_user)
+                else:
+                    raise web.HTTPError(401,
+                                        "You are not Authenticated to do this (2)")
             else:
                 raise web.HTTPError(401,
-                                    "You are not Authenticated to do this (2)")
+                                    "You are not Authenticated to do this (3)")
 
         if raw_user:
             user = yield gen.maybe_future(self.process_user(raw_user, self))
