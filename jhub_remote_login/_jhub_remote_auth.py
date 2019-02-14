@@ -74,10 +74,6 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            self.log.info(f"tmp_auth_key -> "
-                          f"{self.authenticator.tmp_auth_key}")
-            self.log.info(f"tmp_auth_value -> "
-                          f"{self.authenticator.tmp_auth_value}")
             if self.get_tmp_cookie(self.authenticator.tmp_auth_key,
                                    self.authenticator.tmp_auth_value):
                 username = self.get_username()
