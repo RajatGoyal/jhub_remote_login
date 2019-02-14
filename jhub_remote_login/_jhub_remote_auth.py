@@ -1,4 +1,4 @@
-from traitlets import Bool, List
+from traitlets import Bool, Unicode
 from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
@@ -77,13 +77,14 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            if self.get_tmp_cookie('validation', 'ok'):
+            if self.get_tmp_cookie(self.authenticator.tmp_auth_key,
+                                   self.authenticator.tmp_auth_value):
                 username = self.get_username()
                 if username is not None and username != "":
                     whitelist = self.authenticator.whitelist
                     if whitelist and username in whitelist:
                         raw_user = self.user_from_username(username)
-                        self.clear_tmp_cookie('validation')
+                        self.clear_tmp_cookie(self.authenticator.tmp_auth_key)
                         self.set_login_cookie(raw_user)
                     else:
                         raise web.HTTPError(401,
@@ -119,6 +120,23 @@ class RemoteUserAuthenticator(Authenticator):
         When set to True, users going to /hub/login will *always* get a
         new single-user server. When set to False, they'll be
         redirected to their current session if one exists.
+        """,
+        config=True
+    )
+
+    tmp_auth_key = Unicode(
+        default="Validation",
+        help="""
+        The name of the temp header/cookie set to help in log in tasks
+        """,
+        config=True
+    )
+
+    tmp_auth_value = Unicode(
+        default="Ok",
+        help="""
+        The value that should contain the temp 
+        header/cookie set to help in log in tasks
         """,
         config=True
     )
