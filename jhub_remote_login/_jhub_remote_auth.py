@@ -20,129 +20,6 @@ from traitlets import List
 # from traitlets import Unicode
 # from ast import literal_eval
 
-global_username = None
-
-'''
-def safeinput_encode(input_str):
-    """
-    :param input_str: string
-    :return: b32encoded utf-8 string with stripped padding equals
-    """
-    encoded_str = str(b32encode(bytes(input_str, 'utf-8')), 'utf-8')
-    return encoded_str.replace('=', '')
-def safeinput_decode(input_str):
-    """
-    :param input_str: expects a b32encoded utf-8 string
-    :return: a decoded utf-8 string
-    """
-    # Encoder removed "=" padding to satisfy validate_input
-    # Pad with "="" according to:
-    # https://tools.ietf.org/html/rfc3548 :
-    # (1) the final quantum of encoding input is an integral multiple of 40
-    # bits; here, the final unit of encoded output will be an integral
-    # multiple of 8 characters with no "=" padding.
-    if len(input_str) % 8 != 0:
-        padlen = 8 - (len(input_str) % 8)
-        padding = "".join('=' for i in range(padlen))
-        decode_str = "{}{}".format(input_str, padding)
-    else:
-        decode_str = input_str
-    return str(b32decode(bytes(decode_str, 'utf-8')), 'utf-8')
-'''
-
-'''
-class PartialBaseURLHandler(BaseHandler):
-    """
-    Fix against /base_url requests are not redirected to /base_url/home
-    """
-    @web.authenticated
-    @gen.coroutine
-    def get(self):
-        self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-class RemoteUserLogoutHandler(BaseHandler):
-    @gen.coroutine
-    def get(self):
-        user = self.get_current_user()
-        if user:
-            self.clear_login_cookie()
-        self.redirect(self.hub.server.base_url)
-class RemoteUserLoginHandler(BaseHandler):
-    @gen.coroutine
-    def get(self):
-        """ login user """
-        self.log.info(f"self.get_current_user() -> "
-                      f"{self.get_current_user()}")
-        if self.get_current_user() is not None:
-            self.log.info(
-                f"User: {self.get_current_user()}:"
-                f"{self.get_current_user().name} is already authenticated")
-            self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-        else:
-            user_auth = extract_headers(self.request,
-                                        self.authenticator.header_names)
-            # for item in self.authenticator.header_names:
-            #    if item not in user_auth:
-            #        raise web.HTTPError(401,
-            #                            "You are not Authenticated "
-            #                            "to do this")
-            yield self.login_user(user_auth)
-            argument = self.get_argument("next", None, True)
-            self.log.info(f"argument prepare -> {argument}")
-            if argument is not None:
-                self.log.info(f"redirect argument -> {argument}")
-                self.redirect(argument)
-            else:
-                self.log.info(
-                    f"redirect home -> "
-                    f"{url_path_join(self.hub.server.base_url, 'home')}")
-                self.redirect(url_path_join(self.hub.server.base_url, 'home'))
-class RemoteUserAuthenticator(Authenticator):
-    """
-    Accept the authenticated user name from the Remote-User HTTP header.
-    """
-    header_names = List(
-        default_value=['Remote-User', 'Encr-Key'],
-        config=True,
-        help="""HTTP headers to inspect for the username and encryption key"""
-    )
-    def get_handlers(self, app):
-        return [
-            (r'/login', RemoteUserLoginHandler),
-            (r'/logout', RemoteUserLogoutHandler)
-        ]
-    @gen.coroutine
-    def authenticate(self, handler, data):
-        self.log.info(f"data auth -> {data}")
-        self.log.info(f"self.header_names auth -> {self.header_names}")
-        for item in self.header_names:
-            if item not in data:
-                self.log.info(f"A '{item}' header is required"
-                              f" for authentication")
-                return None
-        # data['Remote-User'] should be the key which contains
-        # the encrypted username
-        # data['Encr-Key'] should be the key which contains
-        # the key to decrypt the real username
-        user = {
-            'name': data['Remote-User'],
-            'auth_state': {
-                'encryption-key': data['Encr-Key']
-            }
-        }
-        self.log.info(f"Authenticating: {user['name']} - Login")
-        return user
-def extract_headers(request, headers):
-    user_data = {}
-    for _, header in enumerate(headers):
-        value = request.headers.get(header, "")
-        if value:
-            try:
-                user_data[header] = value
-            except KeyError:
-                pass
-    return user_data
-'''
-
 
 class RemoteUserLoginHandler(BaseHandler):
     """
@@ -156,22 +33,15 @@ class RemoteUserLoginHandler(BaseHandler):
         self.process_user = process_user
 
     def get_username(self):
-        global global_username
-
-        if global_username is None or global_username == "":
-            username = self.request.headers.get("Remote-User", "")
-            if username != "" and username is not None:
-                global_username = username
-                return username
-            else:
-                raise web.HTTPError(401,
-                                    "You are not Authenticated to do this (1)")
+        username = self.get_argument('user', None, True)
+        if username != "" and username is not None:
+            return username
         else:
-            return global_username
+            raise web.HTTPError(401,
+                                "You are not Authenticated to do this (1)")
 
     @gen.coroutine
     def get(self):
-        global global_username
 
         raw_user = self.get_current_user()
 
@@ -197,7 +67,7 @@ class RemoteUserLoginHandler(BaseHandler):
 
         else:
             username = self.get_username()
-            if global_username is not None and global_username != "":
+            if username is not None and username != "":
                 raw_user = self.user_from_username(username)
                 self.set_login_cookie(raw_user)
             else:
