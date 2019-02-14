@@ -59,6 +59,14 @@ class RemoteUserLoginHandler(BaseHandler):
             else:
                 return False
 
+    def clear_tmp_cookie(self, key):
+        self.log.info(f"cookie -> {self.get_cookie(key)}")
+        if self.get_cookie(key):
+            self.clear_cookie(key)
+            return True
+        else:
+            return False
+
     @gen.coroutine
     def get(self):
 
@@ -90,6 +98,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 if username is not None and username != "":
                     raw_user = self.user_from_username(username)
                     self.set_login_cookie(raw_user)
+                    self.clear_tmp_cookie('validation')
                 else:
                     raise web.HTTPError(401,
                                         "You are not Authenticated to do this (2)")
