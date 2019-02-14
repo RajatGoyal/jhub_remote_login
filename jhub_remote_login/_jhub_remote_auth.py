@@ -156,10 +156,14 @@ def get_user_details(name):
     return AnonymousUser(name)
 
 
-def generate_random_userid(n=5):
+def get_user_from_header(header):
     # return ''.join(random.choice(
     #    string.ascii_lowercase + string.digits) for _ in range(n))
-    return 'cbjuan'
+    try:
+        return header.get("Remote-User", "")
+    except BaseException:
+        raise web.HTTPError(401,
+                            "You are not Authenticated to do this")
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -175,7 +179,7 @@ class RemoteUserLoginHandler(BaseHandler):
 
     def generate_user(self):
         while True:
-            name = generate_random_userid()
+            name = get_user_from_header(self.request.headers)
             user = get_user_details(name)
             if not user.active:
                 user.active = True
