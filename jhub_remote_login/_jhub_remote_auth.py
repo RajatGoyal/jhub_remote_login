@@ -135,7 +135,7 @@ class RemoteUserAuthenticator(Authenticator):
     tmp_auth_value = Unicode(
         default="Ok",
         help="""
-        The value that should contain the temp 
+        The value that should contain the temp
         header/cookie set to help in log in tasks
         """,
         config=True
