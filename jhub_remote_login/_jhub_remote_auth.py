@@ -6,19 +6,6 @@ from jupyterhub.utils import url_path_join
 import string
 import random
 import functools
-# import uuid
-# import re
-# from base64 import b32encode, b32decode
-'''
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.auth import Authenticator
-from jupyterhub.auth import LocalAuthenticator
-from jupyterhub.utils import url_path_join
-from tornado import gen, web
-from traitlets import List
-'''
-# from traitlets import Unicode
-# from ast import literal_eval
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -150,6 +137,3 @@ class RemoteUserAuthenticator(Authenticator):
 
     def login_url(self, base_url):
         return url_path_join(base_url, 'login')
-
-# def login_url(self, base_url):
-#    return url_path_join(base_url, 'remotelogin')
