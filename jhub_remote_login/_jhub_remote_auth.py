@@ -144,33 +144,6 @@ def extract_headers(request, headers):
 '''
 
 
-class AnonymousUser(object):
-
-    def __init__(self, name):
-        self.name = name
-        self.active = False
-
-
-# @functools.lru_cache(10000)
-def get_user_details(name):
-    return AnonymousUser(name)
-
-
-def get_user_from_header(header):
-    global global_username
-
-    if global_username is None or global_username == "":
-        username = header.get("Remote-User", "")
-        if username != "" and username is not None:
-            global_username = username
-            return username
-        else:
-            raise web.HTTPError(401,
-                                "You are not Authenticated to do this (1)")
-    else:
-        return global_username
-
-
 class RemoteUserLoginHandler(BaseHandler):
     """
     Handler for /login
@@ -182,13 +155,19 @@ class RemoteUserLoginHandler(BaseHandler):
         self.force_new_server = force_new_server
         self.process_user = process_user
 
-    def generate_user(self):
-        while True:
-            name = get_user_from_header(self.request.headers)
-            user = get_user_details(name)
-            if not user.active:
-                user.active = True
-                return name
+    def get_username(self):
+        global global_username
+
+        if global_username is None or global_username == "":
+            username = self.request.headers.get("Remote-User", "")
+            if username != "" and username is not None:
+                global_username = username
+                return username
+            else:
+                raise web.HTTPError(401,
+                                    "You are not Authenticated to do this (1)")
+        else:
+            return global_username
 
     @gen.coroutine
     def get(self):
@@ -217,7 +196,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            username = self.generate_user()
+            username = self.get_username()
             if global_username is not None and global_username != "":
                 raw_user = self.user_from_username(username)
                 self.set_login_cookie(raw_user)
@@ -240,7 +219,7 @@ class RemoteUserAuthenticator(Authenticator):
     """
 
     auto_login = True
-    login_service = 'auto'
+    login_service = 'remotelogin'
 
     force_new_server = Bool(
         False,
