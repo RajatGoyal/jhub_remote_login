@@ -157,8 +157,9 @@ def get_user_details(name):
 
 
 def generate_random_userid(n=5):
-    return ''.join(random.choice(
-        string.ascii_lowercase + string.digits) for _ in range(n))
+    # return ''.join(random.choice(
+    #    string.ascii_lowercase + string.digits) for _ in range(n))
+    return 'cbjuan'
 
 
 class RemoteUserLoginHandler(BaseHandler):
