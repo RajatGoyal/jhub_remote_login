@@ -48,6 +48,17 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
+    def get_tmp_cookie(self, key, value):
+        self.log.info(f"cookie -> {self.get_cookie(key)}")
+        if self.get_cookie(key):
+            return True
+        else:
+            if self.check_header(key, value):
+                self._set_cookie(key, value)
+                return True
+            else:
+                return False
+
     @gen.coroutine
     def get(self):
 
@@ -74,7 +85,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            if self.check_header('validation', 'ok'):
+            if self.get_tmp_cookie('validation', 'ok'):
                 username = self.get_username()
                 if username is not None and username != "":
                     raw_user = self.user_from_username(username)
