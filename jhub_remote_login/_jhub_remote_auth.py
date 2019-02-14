@@ -96,8 +96,9 @@ class RemoteUserLoginHandler(BaseHandler):
             if self.get_tmp_cookie('validation', 'ok'):
                 username = self.get_username()
                 if username is not None and username != "":
-                    whitelist_pass = yield gen.maybe_future(self.authenticator.check_whitelist(username))
-                    if whitelist_pass:
+                    whitelist = self.authenticator.whitelist
+                    self.log.info(f"whitelist_pass {username} -> {whitelist}")
+                    if whitelist and username in whitelist:
                         raw_user = self.user_from_username(username)
                         self.clear_tmp_cookie('validation')
                         self.set_login_cookie(raw_user)
