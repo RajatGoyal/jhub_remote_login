@@ -68,7 +68,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     @gen.coroutine
-    def get(self):
+    async def get(self):
 
         raw_user = self.get_current_user()
 
@@ -96,9 +96,13 @@ class RemoteUserLoginHandler(BaseHandler):
             if self.get_tmp_cookie('validation', 'ok'):
                 username = self.get_username()
                 if username is not None and username != "":
-                    raw_user = self.user_from_username(username)
-                    self.set_login_cookie(raw_user)
-                    self.clear_tmp_cookie('validation')
+                    if await self.authenticator.check_whitelist(username):
+                        raw_user = self.user_from_username(username)
+                        self.set_login_cookie(raw_user)
+                        self.clear_tmp_cookie('validation')
+                    else:
+                        raise web.HTTPError(401,
+                                            "You are not Authenticated to do this (4)")
                 else:
                     raise web.HTTPError(401,
                                         "You are not Authenticated to do this (2)")
