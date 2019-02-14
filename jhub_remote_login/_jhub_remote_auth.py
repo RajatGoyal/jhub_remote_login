@@ -74,6 +74,10 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
+            self.log.info(f"tmp_auth_key -> "
+                          f"{self.authenticator.tmp_auth_key}")
+            self.log.info(f"tmp_auth_value -> "
+                          f"{self.authenticator.tmp_auth_value}")
             if self.get_tmp_cookie(self.authenticator.tmp_auth_key,
                                    self.authenticator.tmp_auth_value):
                 username = self.get_username()
@@ -113,7 +117,7 @@ class RemoteUserAuthenticator(Authenticator):
     login_service = 'remotelogin'
 
     force_new_server = Bool(
-        False,
+        default_value=False,
         help="""
         Stop the user's server and start a new one when visiting /hub/login
         When set to True, users going to /hub/login will *always* get a
@@ -124,7 +128,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     tmp_auth_key = Unicode(
-        default="Validation",
+        default_value="Validation",
         help="""
         The name of the temp header/cookie set to help in log in tasks
         """,
@@ -132,7 +136,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     tmp_auth_value = Unicode(
-        default="Ok",
+        default_value="ok",
         help="""
         The value that should contain the temp
         header/cookie set to help in log in tasks
