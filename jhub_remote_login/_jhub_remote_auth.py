@@ -90,7 +90,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 # get into a loop.
 
                 self.clear_login_cookie()
-                return self.redirect('/')
+                self.redirect('/')
 
         else:
             if self.get_tmp_cookie('validation', 'ok'):
