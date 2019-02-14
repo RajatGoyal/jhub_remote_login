@@ -88,10 +88,12 @@ class RemoteUserLoginHandler(BaseHandler):
                         self.set_login_cookie(raw_user)
                     else:
                         raise web.HTTPError(401,
-                                            "You are not Authenticated to do this (4)")
+                                            "You are not Authenticated "
+                                            "to do this (4)")
                 else:
                     raise web.HTTPError(401,
-                                        "You are not Authenticated to do this (2)")
+                                        "You are not Authenticated to do "
+                                        "this (2)")
             else:
                 raise web.HTTPError(401,
                                     "You are not Authenticated to do this (3)")
