@@ -240,8 +240,6 @@ class RemoteUserAuthenticator(Authenticator):
         extra_settings = {
             'force_new_server': self.force_new_server,
             'process_user': self.process_user,
-            'tmp_auth_key': self.tmp_auth_key,
-            'tmp_auth_value': self.tmp_auth_value
         }
         '''
         ,
