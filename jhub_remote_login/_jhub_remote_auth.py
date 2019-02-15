@@ -64,7 +64,8 @@ class RemoteUserLoginHandler(BaseHandler):
         return public_key
 
     def decrypt_content(self, content):
-        if self.rsa_private_key_pem is not None:
+        if self.rsa_private_key_pem is not None and\
+           self.rsa_private_key_pem != "":
             private_key = self.get_rsa_private_key(
                 self.rsa_private_key_pem,
                 self.rsa_private_key_password
@@ -78,7 +79,8 @@ class RemoteUserLoginHandler(BaseHandler):
             return content
 
     def encrypt_content(self, content):
-        if self.rsa_public_key_pem is not None:
+        if self.rsa_public_key_pem is not None and\
+           self.rsa_public_key_pem != "":
             public_key = self.get_rsa_public_key(
                 self.rsa_public_key_pem)
 
@@ -183,7 +185,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     rsa_private_key_pem = Unicode(
-        default_value=None,
+        default_value="",
         help="""
         String containing the PEM of the private key to use with RSA
         encryption/decryption.
@@ -192,7 +194,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     rsa_public_key_pem = Unicode(
-        default_value=None,
+        default_value="",
         help="""
         String containing the PEM of the public key to use with RSA
         encryption/decryption.
@@ -201,7 +203,7 @@ class RemoteUserAuthenticator(Authenticator):
     )
 
     rsa_private_key_password = Unicode(
-        default_value=None,
+        default_value="",
         help="""
         String containing the password to load the PEM variable
         of the private key to use with RSA encryption/decryption.
