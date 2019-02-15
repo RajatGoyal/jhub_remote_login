@@ -58,6 +58,14 @@ class RemoteUserLoginHandler(BaseHandler):
             else:
                 return False
         '''
+        if self.get_cookie(key):
+            return True
+        else:
+            if self.check_header(key, value):
+                self._set_cookie(key, value)
+                return True
+            else:
+                return False
 
     def clear_tmp_cookie(self, key):
         if self.get_cookie(key):
@@ -196,7 +204,7 @@ class RemoteUserAuthenticator(Authenticator):
         """,
         config=True
     )
-
+    '''
     rsa_private_key_pem = Unicode(
         default_value="",
         help="""
@@ -223,6 +231,7 @@ class RemoteUserAuthenticator(Authenticator):
         """,
         config=True
     )
+    '''
 
     def process_user(self, user, handler):
         return user
@@ -232,11 +241,15 @@ class RemoteUserAuthenticator(Authenticator):
             'force_new_server': self.force_new_server,
             'process_user': self.process_user,
             'tmp_auth_key': self.tmp_auth_key,
-            'tmp_auth_value': self.tmp_auth_value,
-            'rsa_private_key_pem': self.rsa_private_key_pem,
-            'rsa_public_key_pem': self.rsa_public_key_pem,
-            'rsa_private_key_password': self.rsa_private_key_password
+            'tmp_auth_value': self.tmp_auth_value
         }
+        '''
+        ,
+        'rsa_private_key_pem': self.rsa_private_key_pem,
+        'rsa_public_key_pem': self.rsa_public_key_pem,
+        'rsa_private_key_password': self.rsa_private_key_password
+        '''
+
         return [
             ('/login', RemoteUserLoginHandler, extra_settings)
         ]
