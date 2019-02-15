@@ -37,6 +37,9 @@ class RemoteUserLoginHandler(BaseHandler):
 
     def check_header(self, key, value):
         header_value = self.request.headers.get(key, "")
+        # self.log.info(
+        #     f"Trying to get the user for the token"
+        #     f" {header_value}-> {self.user_for_token(header_value)}")
         if value == header_value:
             return True
         else:
@@ -231,6 +234,7 @@ class RemoteUserAuthenticator(Authenticator):
             'tmp_auth_key': self.tmp_auth_key,
             'tmp_auth_value': self.tmp_auth_value,
             'rsa_private_key_pem': self.rsa_private_key_pem,
+            'rsa_public_key_pem': self.rsa_public_key_pem,
             'rsa_private_key_password': self.rsa_private_key_password
         }
         return [
