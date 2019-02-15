@@ -37,11 +37,11 @@ class RemoteUserLoginHandler(BaseHandler):
 
     def check_header(self, key, value):
         header_value = self.request.headers.get(key, "")
-        '''
+
         self.log.info(
             f"Trying to get the user for the token"
             f" {header_value}-> {self.user_for_token(header_value)}")
-        '''
+
         if value == header_value:
             return True
         else:
