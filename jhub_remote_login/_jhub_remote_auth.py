@@ -75,14 +75,14 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            if self.get_tmp_cookie(self.authenticator.tmp_auth_key,
-                                   self.authenticator.tmp_auth_value):
+            if self.get_tmp_cookie(self.tmp_auth_key,
+                                   self.tmp_auth_value):
                 username = self.get_username()
                 if username is not None and username != "":
                     whitelist = self.authenticator.whitelist
                     if whitelist and username in whitelist:
                         raw_user = self.user_from_username(username)
-                        self.clear_tmp_cookie(self.authenticator.tmp_auth_key)
+                        self.clear_tmp_cookie(self.tmp_auth_key)
                         self.set_login_cookie(raw_user)
                     else:
                         raise web.HTTPError(401,
@@ -166,6 +166,8 @@ class RemoteUserAuthenticator(Authenticator):
         extra_settings = {
             'force_new_server': self.force_new_server,
             'process_user': self.process_user,
+            'tmp_auth_key': self.tmp_auth_key,
+            'tmp_auth_value': self.tmp_auth_value,
             'rsa_private_key_pem': self.rsa_private_key_pem,
             'rsa_private_key_password': self.rsa_private_key_password
         }
