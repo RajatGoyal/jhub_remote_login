@@ -206,7 +206,7 @@ class RemoteUserAuthenticator(Authenticator):
         """,
         config=True
     )
-    '''
+
     rsa_private_key_pem = Unicode(
         default_value="",
         help="""
@@ -233,7 +233,6 @@ class RemoteUserAuthenticator(Authenticator):
         """,
         config=True
     )
-    '''
 
     def process_user(self, user, handler):
         return user
@@ -243,12 +242,6 @@ class RemoteUserAuthenticator(Authenticator):
             'force_new_server': self.force_new_server,
             'process_user': self.process_user,
         }
-        '''
-        ,
-        'rsa_private_key_pem': self.rsa_private_key_pem,
-        'rsa_public_key_pem': self.rsa_public_key_pem,
-        'rsa_private_key_password': self.rsa_private_key_password
-        '''
 
         return [
             ('/login', RemoteUserLoginHandler, extra_settings)
