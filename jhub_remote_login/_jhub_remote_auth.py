@@ -3,6 +3,7 @@ from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
+# from encryption import RSATools
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -140,13 +141,33 @@ class RemoteUserAuthenticator(Authenticator):
         config=True
     )
 
+    rsa_private_key_pem = Unicode(
+        default_value=None,
+        help="""
+        String containing the PEM of the private key to use with RSA 
+        encryption/decryption.
+        """,
+        config=True
+    )
+
+    rsa_private_key_password = Unicode(
+        default_value=None,
+        help="""
+        String containing the password to load the PEM variable 
+        of the private key to use with RSA encryption/decryption.
+        """,
+        config=True
+    )
+
     def process_user(self, user, handler):
         return user
 
     def get_handlers(self, app):
         extra_settings = {
             'force_new_server': self.force_new_server,
-            'process_user': self.process_user
+            'process_user': self.process_user,
+            'rsa_private_key_pem': self.rsa_private_key_pem,
+            'rsa_private_key_password': self.rsa_private_key_password
         }
         return [
             ('/login', RemoteUserLoginHandler, extra_settings)
