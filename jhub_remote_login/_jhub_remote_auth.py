@@ -3,7 +3,8 @@ from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
-# from encryption import RSATools
+from encryption import RSATools
+import base64
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -18,7 +19,8 @@ class RemoteUserLoginHandler(BaseHandler):
         self.process_user = process_user
 
     def get_username(self):
-        username = self.get_argument('user', None, True)
+        username_encr = self.get_argument('user', None, True)
+        username = self.decrypt_content(username_encr)
         if username != "" and username is not None:
             return username
         else:
@@ -33,11 +35,13 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     def get_tmp_cookie(self, key, value):
-        if self.get_cookie(key):
+        if self.get_cookie(self.decrypt_content(key)):
             return True
         else:
-            if self.check_header(key, value):
-                self._set_cookie(key, value)
+            if self.check_header(key,
+                                 self.decrypt_content(value)):
+                self._set_cookie(self.encrypt_content(key),
+                                 self.encrypt_content(value))
                 return True
             else:
                 return False
@@ -48,6 +52,43 @@ class RemoteUserLoginHandler(BaseHandler):
             return True
         else:
             return False
+
+    def get_rsa_private_key(self, private_key_pem, private_key_password):
+        private_key = RSATools().load_private_key_pem_variable(
+            private_key_pem, private_key_password)
+        return private_key
+
+    def get_rsa_public_key(self, public_key_pem):
+        public_key = RSATools().load_private_key_pem_variable(
+            public_key_pem)
+        return public_key
+
+    def decrypt_content(self, content):
+        if self.rsa_private_key_pem is not None:
+            private_key = self.get_rsa_private_key(
+                self.rsa_private_key_pem,
+                self.rsa_private_key_password
+            )
+            # We assume that the encrypted content
+            # comes encoded in base64
+            decrypted_content = RSATools().decrypt_text_rsa(
+                base64.b64decode(content), private_key)
+            return decrypted_content
+        else:
+            return content
+
+    def encrypt_content(self, content):
+        if self.rsa_public_key_pem is not None:
+            public_key = self.get_rsa_public_key(
+                self.rsa_public_key_pem)
+
+            encrypted_content = RSATools().encrypt_text_rsa(
+                content, public_key)
+            # We encode the encrypted content in base64
+            encrypted_content_b64 = base64.b64encode(encrypted_content)
+            return encrypted_content_b64
+        else:
+            return content
 
     @gen.coroutine
     def get(self):
@@ -145,6 +186,15 @@ class RemoteUserAuthenticator(Authenticator):
         default_value=None,
         help="""
         String containing the PEM of the private key to use with RSA 
+        encryption/decryption.
+        """,
+        config=True
+    )
+
+    rsa_public_key_pem = Unicode(
+        default_value=None,
+        help="""
+        String containing the PEM of the public key to use with RSA 
         encryption/decryption.
         """,
         config=True
