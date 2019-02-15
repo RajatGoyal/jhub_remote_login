@@ -185,7 +185,7 @@ class RemoteUserAuthenticator(Authenticator):
     rsa_private_key_pem = Unicode(
         default_value=None,
         help="""
-        String containing the PEM of the private key to use with RSA 
+        String containing the PEM of the private key to use with RSA
         encryption/decryption.
         """,
         config=True
@@ -194,7 +194,7 @@ class RemoteUserAuthenticator(Authenticator):
     rsa_public_key_pem = Unicode(
         default_value=None,
         help="""
-        String containing the PEM of the public key to use with RSA 
+        String containing the PEM of the public key to use with RSA
         encryption/decryption.
         """,
         config=True
@@ -203,7 +203,7 @@ class RemoteUserAuthenticator(Authenticator):
     rsa_private_key_password = Unicode(
         default_value=None,
         help="""
-        String containing the password to load the PEM variable 
+        String containing the password to load the PEM variable
         of the private key to use with RSA encryption/decryption.
         """,
         config=True
