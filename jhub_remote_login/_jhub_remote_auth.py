@@ -19,8 +19,16 @@ class RemoteUserLoginHandler(BaseHandler):
         self.process_user = process_user
 
     def get_username(self):
+        '''
         username_encr = self.get_argument('user', None, True)
         username = self.decrypt_content(username_encr)
+        if username != "" and username is not None:
+            return username
+        else:
+            raise web.HTTPError(401,
+                                "You are not Authenticated to do this (1)")
+        '''
+        username = self.get_argument('user', None, True)
         if username != "" and username is not None:
             return username
         else:
@@ -35,6 +43,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     def get_tmp_cookie(self, key, value):
+        '''
         if self.get_cookie(self.decrypt_content(key)):
             return True
         else:
@@ -45,6 +54,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 return True
             else:
                 return False
+        '''
 
     def clear_tmp_cookie(self, key):
         if self.get_cookie(key):
@@ -52,7 +62,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return True
         else:
             return False
-
+    '''
     def get_rsa_private_key(self, private_key_pem, private_key_password):
         private_key = RSATools().load_private_key_pem_variable(
             private_key_pem, private_key_password)
@@ -91,7 +101,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return encrypted_content_b64
         else:
             return content
-
+    '''
     @gen.coroutine
     def get(self):
 
