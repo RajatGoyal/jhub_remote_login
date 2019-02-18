@@ -218,7 +218,8 @@ class RemoteUserLoginHandler(BaseHandler):
 
         else:
             # Check if the cookie which contains the username exists
-            self.log.info("Check if the cookie which contains the username exists")
+            self.log.info(
+                "Check if the cookie which contains the username exists")
             username = self.get_tmp_cookie(self.authenticator.header_user_key)
             if username is None:
                 # If no cookie, check if the header with the username exists
@@ -230,7 +231,8 @@ class RemoteUserLoginHandler(BaseHandler):
                                         "You are not Authenticated to do this (1)")
 
             # Check if the cookie which contains the token exists
-            self.log.info("Check if the cookie which contains the token exists")
+            self.log.info(
+                "Check if the cookie which contains the token exists")
             token = self.get_tmp_cookie(self.authenticator.header_token_key)
             if token is None:
                 self.log.info(
@@ -272,8 +274,10 @@ class RemoteUserLoginHandler(BaseHandler):
                     else:
                         # The token received and the username don't match
                         # Removing the temp cookies and raising a 401
-                        self.clear_tmp_cookie(self.authenticator.header_user_key)
-                        self.clear_tmp_cookie(self.authenticator.header_token_key)
+                        self.clear_tmp_cookie(
+                            self.authenticator.header_user_key)
+                        self.clear_tmp_cookie(
+                            self.authenticator.header_token_key)
                         raise web.HTTPError(401,
                                             "You are not Authenticated to do this (3)")
                 else:
@@ -317,7 +321,7 @@ class RemoteUserAuthenticator(Authenticator):
     header_user_key = Unicode(
         default_value="username",
         help="""
-        The name of the temp header/cookie set to save the username 
+        The name of the temp header/cookie set to save the username
         that helps in the log in tasks
         """,
         config=True
@@ -326,7 +330,7 @@ class RemoteUserAuthenticator(Authenticator):
     header_token_key = Unicode(
         default_value="token",
         help="""
-        The name of the temp header/cookie set to save the token 
+        The name of the temp header/cookie set to save the token
         that helps in the log in tasks
         """,
         config=True
@@ -335,8 +339,8 @@ class RemoteUserAuthenticator(Authenticator):
     use_encryption = Bool(
         default_value=False,
         help="""
-        Set to True if you are going to use the 
-        token and username headers encrypted. 
+        Set to True if you are going to use the
+        token and username headers encrypted.
         False if not
         """,
         config=True
