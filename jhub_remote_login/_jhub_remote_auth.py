@@ -11,10 +11,15 @@ from jupyterhub.services.auth import HubAuth
 class AuthRequest(HubAuth):
 
     def initialize(self):
+        self.log.info(f"AuthRequest initialize()")
         super().initialize()
+        self.log.info(f"api_token: {self.api_token}")
 
     def match_token_username(self, token, username):
+        self.log.info(f"Beginning match_token_username with token: "
+                      f"{token} & username: {username}")
         user_token = self.user_for_token(token, use_cache=False)
+        self.log.info(f"match_token_username user_token got: {user_token}")
         if username == user_token['name']:
             return True
         else:
@@ -52,9 +57,12 @@ class RemoteUserLoginHandler(BaseHandler):
     def check_header_token(self, key, username):
         header_value = self.request.headers.get(key, "")
 
+        self.log.info(f"Checking header value: {header_value}")
         if AuthRequest().match_token_username(header_value, username):
+            self.log.info(f"AuthRequest True")
             return True
         else:
+            self.log.info(f"AuthRequest false")
             return False
 
     def get_tmp_cookie(self, key, username):
@@ -71,8 +79,10 @@ class RemoteUserLoginHandler(BaseHandler):
                 return False
         '''
         if self.get_cookie(key):
+            self.log.info("Checking cookie: True")
             return True
         else:
+            self.log.info("Checking cookie: False")
             if self.check_header_token(key, username):
                 self._set_cookie(key, username)
                 return True
