@@ -44,8 +44,11 @@ class RemoteUserLoginHandler(BaseHandler):
                       f"{token} & username: {username}")
         user_token = auth.user_for_token(token)
         self.log.info(f"match_token_username user_token got: {user_token}")
-        if username == user_token['name']:
-            return True
+        if user_token is not None:
+            if username == user_token['name']:
+                return True
+            else:
+                return False
         else:
             return False
 
