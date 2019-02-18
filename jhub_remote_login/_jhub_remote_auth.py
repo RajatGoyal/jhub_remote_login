@@ -108,23 +108,6 @@ class RemoteUserLoginHandler(BaseHandler):
         self.force_new_server = force_new_server
         self.process_user = process_user
 
-    def get_username(self):
-        '''
-        username_encr = self.get_argument('user', None, True)
-        if username_encr != "" and username_encr is not None:
-            username = self.decrypt_content(username_encr)
-            return username
-        else:
-            raise web.HTTPError(401,
-                                "You are not Authenticated to do this (1)")
-        '''
-        username = self.get_argument('user', None, True)
-        if username != "" and username is not None:
-            return username
-        else:
-            raise web.HTTPError(401,
-                                "You are not Authenticated to do this (1)")
-
     async def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
         req = HTTPRequest(
@@ -137,7 +120,6 @@ class RemoteUserLoginHandler(BaseHandler):
         return response
 
     async def match_token_username(self, token, username):
-
         user_retrieved = await self.user_for_token(token)
         if user_retrieved is not None:
             if username == user_retrieved['name']:
@@ -147,38 +129,19 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
-    def check_header_token(self, key, username):
+    def get_header(self, key):
         header_value = self.request.headers.get(key, "")
-
         if header_value is None or header_value == "":
             return False
-        match = self.match_token_username(header_value, username)
-        if match is True:
-            return True
         else:
-            return False
+            return header_value
 
-    def get_tmp_cookie(self, key, username):
-        ''' 
-        if self.get_cookie(self.decrypt_content(key)):
-            return True
+    def get_tmp_cookie(self, key):
+        cookie_content = self.get_cookie(key)
+        if cookie_content is not None:
+            return cookie_content
         else:
-            if self.check_header_token(key,
-                                       self.decrypt_content(username)):
-                self._set_cookie(self.encrypt_content(key),
-                                 self.encrypt_content(username))
-                return True
-            else:
-                return False
-        '''
-        if self.get_cookie(key):
-            return True
-        else:
-            if self.check_header_token(key, username):
-                self._set_cookie(key, username)
-                return True
-            else:
-                return False
+            return None
 
     def clear_tmp_cookie(self, key):
         if self.get_cookie(key):
@@ -252,27 +215,75 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
-            username = self.get_username()
-            if self.get_tmp_cookie(self.authenticator.tmp_auth_key,
-                                   username):
-                if username is not None and username != "":
-                    whitelist = self.authenticator.whitelist
-                    if whitelist and username in whitelist:
-                        raw_user = self.user_from_username(username)
-                        self.clear_tmp_cookie(self.authenticator.tmp_auth_key)
-                        self.set_login_cookie(raw_user)
-                    else:
-                        raise web.HTTPError(401,
-                                            "You are not Authenticated "
-                                            "to do this (4)")
-                else:
+            # Check if the cookie which contains the username exists
+            self.log.info("Check if the cookie which contains the username exists")
+            username = self.get_tmp_cookie(self.authenticator.header_user_key)
+            if username is None:
+                # If no cookie, check if the header with the username exists
+                self.log.info(
+                    "If no cookie, check if the header with the username exists")
+                username = self.get_header(self.authenticator.header_user_key)
+                if username is None:
                     raise web.HTTPError(401,
-                                        "You are not Authenticated to do "
-                                        "this (2)")
+                                        "You are not Authenticated to do this (1)")
+
+            # Check if the cookie which contains the token exists
+            self.log.info("Check if the cookie which contains the token exists")
+            token = self.get_tmp_cookie(self.authenticator.header_token_key)
+            if token is None:
+                self.log.info(
+                    "If no cookie, check if the header with the token exists")
+                # If no cookie, check if the header with the token exists
+                token = self.get_header(self.authenticator.header_token_key)
+                if token is None:
+                    raise web.HTTPError(401,
+                                        "You are not Authenticated to do this (2)")
+
+            if username is not None and username != "" and\
+                    token is not None and token != "":
+
+                self.log.info(
+                    f"Encryption is '{self.authenticator.use_encryption}'")
+
+                # Set a temp cookie with the username received
+                self._set_cookie(self.authenticator.header_user_key,
+                                 username)
+                # Decrypt the username if the use_encryption variable is True
+                if self.authenticator.use_encryption is True:
+                    username = self.decrypt_content(username)
+
+                # Set a temp cookie with the token received
+                    self._set_cookie(self.authenticator.header_token_key,
+                                     self.token)
+                # Decrypt the token if the use_encryption variable is True
+                if self.authenticator.use_encryption is True:
+                    token = self.decrypt_content(token)
+
+                whitelist = self.authenticator.whitelist
+                if whitelist and username in whitelist:
+                    match = self.match_token_username(token, username)
+                    if match is False:
+                        # The token received and the username don't match
+                        # Removing the temp cookies and raising a 401
+                        self.clear_tmp_cookie(self.authenticator.header_user_key)
+                        self.clear_tmp_cookie(self.authenticator.header_token_key)
+                        raise web.HTTPError(401,
+                                            "You are not Authenticated to do this (3)")
+                    else:
+                        raw_user = self.user_from_username(username)
+                        self.clear_tmp_cookie(self.authenticator.header_user_key)
+                        self.clear_tmp_cookie(self.authenticator.header_token_key)
+                        self.set_login_cookie(raw_user)
+                else:
+                    # The user is not in the whitelist
+                    # Removing the temp cookies and raising a 401
+                    self.clear_tmp_cookie(self.authenticator.header_user_key)
+                    self.clear_tmp_cookie(self.authenticator.header_token_key)
+                    raise web.HTTPError(401,
+                                        "You are not Authenticated to do this (4)")
             else:
                 raise web.HTTPError(401,
-                                    "You are not Authenticated to do this (3)")
-
+                                    "You are not Authenticated to do this (5)")
         if raw_user:
             user = yield gen.maybe_future(self.process_user(raw_user, self))
 
@@ -301,19 +312,30 @@ class RemoteUserAuthenticator(Authenticator):
         config=True
     )
 
-    tmp_auth_key = Unicode(
-        default_value="Validation",
+    header_user_key = Unicode(
+        default_value="username",
         help="""
-        The name of the temp header/cookie set to help in log in tasks
+        The name of the temp header/cookie set to save the username 
+        that helps in the log in tasks
         """,
         config=True
     )
 
-    tmp_auth_value = Unicode(
-        default_value="ok",
+    header_token_key = Unicode(
+        default_value="token",
         help="""
-        The value that should contain the temp
-        header/cookie set to help in log in tasks
+        The name of the temp header/cookie set to save the token 
+        that helps in the log in tasks
+        """,
+        config=True
+    )
+
+    use_encryption = Bool(
+        default_value=False,
+        help="""
+        Set to True if you are going to use the 
+        token and username headers encrypted. 
+        False if not
         """,
         config=True
     )
