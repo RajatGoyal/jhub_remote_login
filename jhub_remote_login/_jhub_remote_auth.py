@@ -109,6 +109,7 @@ class RemoteUserLoginHandler(BaseHandler):
         self.process_user = process_user
 
     def get_username(self):
+        '''
         username_encr = self.get_argument('user', None, True)
         if username_encr != "" and username_encr is not None:
             username = self.decrypt_content(username_encr)
@@ -123,7 +124,6 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             raise web.HTTPError(401,
                                 "You are not Authenticated to do this (1)")
-        '''
 
     async def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
@@ -159,6 +159,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     def get_tmp_cookie(self, key, username):
+        ''' 
         if self.get_cookie(self.decrypt_content(key)):
             return True
         else:
@@ -178,7 +179,6 @@ class RemoteUserLoginHandler(BaseHandler):
                 return True
             else:
                 return False
-        '''
 
     def clear_tmp_cookie(self, key):
         if self.get_cookie(key):
