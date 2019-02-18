@@ -268,8 +268,10 @@ class RemoteUserLoginHandler(BaseHandler):
                     match = self.match_token_username(token, username)
                     if match is True:
                         raw_user = self.user_from_username(username)
-                        self.clear_tmp_cookie(self.authenticator.header_user_key)
-                        self.clear_tmp_cookie(self.authenticator.header_token_key)
+                        self.clear_tmp_cookie(
+                            self.authenticator.header_user_key)
+                        self.clear_tmp_cookie(
+                            self.authenticator.header_token_key)
                         self.set_login_cookie(raw_user)
                     else:
                         # The token received and the username don't match
