@@ -189,12 +189,12 @@ class RemoteUserLoginHandler(BaseHandler):
 
     def get_rsa_private_key(self, private_key_pem, private_key_password):
         private_key = RSATools().load_private_key_pem_variable(
-            private_key_pem, private_key_password)
+            private_key_pem.encode('utf-8'), private_key_password)
         return private_key
 
     def get_rsa_public_key(self, public_key_pem):
         public_key = RSATools().load_private_key_pem_variable(
-            public_key_pem)
+            public_key_pem.encode('utf-8'))
         return public_key
 
     def decrypt_content(self, content):
