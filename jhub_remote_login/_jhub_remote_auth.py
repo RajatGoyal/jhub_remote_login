@@ -134,13 +134,6 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
-    def validate_username_token(self, token, username):
-        match = self.match_token_username(token, username)
-        if match is True:
-            return True
-        else:
-            return False
-
     def get_header(self, key):
         header_value = self.request.headers.get(key, "")
         if header_value is None or header_value == "":
@@ -279,7 +272,8 @@ class RemoteUserLoginHandler(BaseHandler):
                 whitelist = self.authenticator.whitelist
                 if whitelist and username in whitelist:
                     self.log.info("Username in whitelist")
-                    if self.validate_username_token(token, username) is True:
+                    match = yield self.match_token_username(token, username)
+                    if match is True:
                         self.log.info("Match between token & username")
                         raw_user = self.user_from_username(username)
                         self.clear_tmp_cookie(
