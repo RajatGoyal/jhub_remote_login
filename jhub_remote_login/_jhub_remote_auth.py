@@ -107,7 +107,8 @@ class RemoteUserLoginHandler(BaseHandler):
         self.force_new_server = force_new_server
         self.process_user = process_user
 
-    async def user_for_token(self, token):
+    @gen.coroutine
+    def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
         url_api = url_path_join(self.base_url, "api/user")
         self.log.info(f"url  -> {url_api}")
@@ -117,22 +118,23 @@ class RemoteUserLoginHandler(BaseHandler):
                 'Authorization': f'token {token}'
             },
         )
-        response = await AsyncHTTPClient().fetch(req)
-        return response
+        response = yield AsyncHTTPClient().fetch(req)
+        raise gen.Return(response)
 
-    async def match_token_username(self, token, username):
+    @gen.coroutine
+    def match_token_username(self, token, username):
         self.log.info(f"trying to get user_for_token")
-        user_retrieved = await self.user_for_token(token)
+        user_retrieved = yield self.user_for_token(token)
         self.log.info(f"user_retrieved -> {user_retrieved}")
         if user_retrieved is not None:
             self.log.info(f"username -> {username}")
             self.log.info(f"user_retrieved -> {user_retrieved}")
             if username == user_retrieved['name']:
-                return True
+                raise gen.Return(True)
             else:
-                return False
+                raise gen.Return(False)
         else:
-            return False
+            raise gen.Return(False)
 
     def get_header(self, key):
         header_value = self.request.headers.get(key, "")
