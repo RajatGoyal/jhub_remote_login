@@ -110,8 +110,8 @@ class RemoteUserLoginHandler(BaseHandler):
 
     def get_username(self):
         username_encr = self.get_argument('user', None, True)
-        username = self.decrypt_content(username_encr)
-        if username != "" and username is not None:
+        if username_encr != "" and username_encr is not None:
+            username = self.decrypt_content(username_encr)
             return username
         else:
             raise web.HTTPError(401,
