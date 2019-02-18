@@ -3,8 +3,22 @@ from tornado import gen, web
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
+from jupyterhub.services.auth import HubAuth
 # from encryption import RSATools
 # import base64
+
+
+class AuthRequest(HubAuth):
+
+    def initialize(self):
+        super().initialize()
+
+    def match_token_username(self, token, username):
+        user_token = self.user_for_token(token, use_cache=False)
+        if username == user_token['name']:
+            return True
+        else:
+            return False
 
 
 class RemoteUserLoginHandler(BaseHandler):
@@ -35,27 +49,23 @@ class RemoteUserLoginHandler(BaseHandler):
             raise web.HTTPError(401,
                                 "You are not Authenticated to do this (1)")
 
-    def check_header(self, key, value):
+    def check_header_token(self, key, username):
         header_value = self.request.headers.get(key, "")
 
-        self.log.info(
-            f"Trying to get the user for the token"
-            f" {header_value}-> {self.user_for_token(header_value)}")
-
-        if value == header_value:
+        if AuthRequest().match_token_username(header_value, username):
             return True
         else:
             return False
 
-    def get_tmp_cookie(self, key, value):
+    def get_tmp_cookie(self, key, username):
         '''
         if self.get_cookie(self.decrypt_content(key)):
             return True
         else:
-            if self.check_header(key,
-                                 self.decrypt_content(value)):
+            if self.check_header_token(key,
+                                 self.decrypt_content(username)):
                 self._set_cookie(self.encrypt_content(key),
-                                 self.encrypt_content(value))
+                                 self.encrypt_content(username))
                 return True
             else:
                 return False
@@ -63,8 +73,8 @@ class RemoteUserLoginHandler(BaseHandler):
         if self.get_cookie(key):
             return True
         else:
-            if self.check_header(key, value):
-                self._set_cookie(key, value)
+            if self.check_header_token(key, username):
+                self._set_cookie(key, username)
                 return True
             else:
                 return False
@@ -141,9 +151,9 @@ class RemoteUserLoginHandler(BaseHandler):
                 return self.redirect('/')
 
         else:
+            username = self.get_username()
             if self.get_tmp_cookie(self.authenticator.tmp_auth_key,
-                                   self.authenticator.tmp_auth_value):
-                username = self.get_username()
+                                   username):
                 if username is not None and username != "":
                     whitelist = self.authenticator.whitelist
                     if whitelist and username in whitelist:
