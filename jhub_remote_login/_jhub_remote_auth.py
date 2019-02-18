@@ -1,9 +1,11 @@
 from traitlets import Bool, Unicode
 from tornado import gen, web
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from jupyterhub.services.auth import HubAuth
+import json
 # from encryption import RSATools
 # import base64
 
@@ -36,13 +38,21 @@ class RemoteUserLoginHandler(BaseHandler):
             raise web.HTTPError(401,
                                 "You are not Authenticated to do this (1)")
 
-    def match_token_username(self, token, username):
+    async def user_for_token(self, token):
+        """Retrieve the user for a given token, via /hub/api/user"""
+        req = HTTPRequest(
+            url_path_join(self.base_url, "api/user"),
+            headers={
+                'Authorization': f'token {token}'
+            },
+        )
+        response = await AsyncHTTPClient().fetch(req)
+        self.log.info(f"user_for_token response: {response}")
+        return response
 
-        auth = HubAuth(api_token=self.authenticator.hub_auth_api_token,
-                       cache_max_age=60)
-        self.log.info(f"Beginning match_token_username with token: "
-                      f"{token} & username: {username}")
-        user_token = auth.user_for_token(token)
+    async def match_token_username(self, token, username):
+
+        user_token = await self.user_for_token(token)
         self.log.info(f"match_token_username user_token got: {user_token}")
         if user_token is not None:
             if username == user_token['name']:
