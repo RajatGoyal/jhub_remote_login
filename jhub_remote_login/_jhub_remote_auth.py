@@ -40,7 +40,6 @@ class RemoteUserLoginHandler(BaseHandler):
 
         auth = HubAuth(api_token=self.authenticator.hub_auth_api_token,
                        cache_max_age=60)
-        self.log.info(f"api_token match: {self.api_token}")
         self.log.info(f"Beginning match_token_username with token: "
                       f"{token} & username: {username}")
         user_token = auth.user_for_token(token)
