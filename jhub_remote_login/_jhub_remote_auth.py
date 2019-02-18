@@ -110,7 +110,7 @@ class RemoteUserLoginHandler(BaseHandler):
     @gen.coroutine
     def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
-        url_api = url_path_join(self.base_url, "api/user")
+        url_api = url_path_join(self.base_url, "/hub/api/user")
         self.log.info(f"url  -> {url_api}")
         req = HTTPRequest(
             url_api,
