@@ -260,7 +260,7 @@ class RemoteUserLoginHandler(BaseHandler):
 
                 # Set a temp cookie with the token received
                     self._set_cookie(self.authenticator.header_token_key,
-                                     self.token)
+                                     token)
                 # Decrypt the token if the use_encryption variable is True
                 if self.authenticator.use_encryption is True:
                     token = self.decrypt_content(token)
