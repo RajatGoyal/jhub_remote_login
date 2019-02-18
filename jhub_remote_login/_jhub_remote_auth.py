@@ -5,13 +5,12 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from jupyterhub.services.auth import HubAuth
-import json
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-# import base64
+import base64
 
 
 class RSATools():
@@ -110,7 +109,6 @@ class RemoteUserLoginHandler(BaseHandler):
         self.process_user = process_user
 
     def get_username(self):
-        '''
         username_encr = self.get_argument('user', None, True)
         username = self.decrypt_content(username_encr)
         if username != "" and username is not None:
@@ -125,6 +123,7 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             raise web.HTTPError(401,
                                 "You are not Authenticated to do this (1)")
+        '''
 
     async def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
@@ -160,12 +159,11 @@ class RemoteUserLoginHandler(BaseHandler):
             return False
 
     def get_tmp_cookie(self, key, username):
-        '''
         if self.get_cookie(self.decrypt_content(key)):
             return True
         else:
             if self.check_header_token(key,
-                                 self.decrypt_content(username)):
+                                       self.decrypt_content(username)):
                 self._set_cookie(self.encrypt_content(key),
                                  self.encrypt_content(username))
                 return True
@@ -180,6 +178,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 return True
             else:
                 return False
+        '''
 
     def clear_tmp_cookie(self, key):
         if self.get_cookie(key):
@@ -187,7 +186,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return True
         else:
             return False
-    '''
+
     def get_rsa_private_key(self, private_key_pem, private_key_password):
         private_key = RSATools().load_private_key_pem_variable(
             private_key_pem, private_key_password)
@@ -226,7 +225,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return encrypted_content_b64
         else:
             return content
-    '''
+
     @gen.coroutine
     def get(self):
 
