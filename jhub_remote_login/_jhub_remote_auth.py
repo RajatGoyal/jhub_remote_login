@@ -132,7 +132,7 @@ class RemoteUserLoginHandler(BaseHandler):
     def get_header(self, key):
         header_value = self.request.headers.get(key, "")
         if header_value is None or header_value == "":
-            return False
+            return None
         else:
             return header_value
 
