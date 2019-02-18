@@ -120,7 +120,7 @@ class RemoteUserLoginHandler(BaseHandler):
         response = await AsyncHTTPClient().fetch(req)
         return response
 
-    async def match_token_username(self, token, username):
+    async def _check_token_username(self, token, username):
         self.log.info(f"trying to get user_for_token")
         user_retrieved = await self.user_for_token(token)
         self.log.info(f"user_retrieved -> {user_retrieved}")
@@ -131,6 +131,13 @@ class RemoteUserLoginHandler(BaseHandler):
                 return True
             else:
                 return False
+        else:
+            return False
+
+    def match_token_username(self, token, username):
+        match = self._check_token_username(token, username)
+        if match is True:
+            return True
         else:
             return False
 
@@ -272,8 +279,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 whitelist = self.authenticator.whitelist
                 if whitelist and username in whitelist:
                     self.log.info("Username in whitelist")
-                    match = await self.match_token_username(token, username)
-                    if match is True:
+                    if self.match_token_username(token, username):
                         self.log.info("Match between token & username")
                         raw_user = self.user_from_username(username)
                         self.clear_tmp_cookie(
