@@ -4,7 +4,6 @@ from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
-from jupyterhub.services.auth import HubAuth
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
