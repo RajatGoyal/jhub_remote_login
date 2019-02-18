@@ -198,11 +198,11 @@ class RemoteUserLoginHandler(BaseHandler):
         return public_key
 
     def decrypt_content(self, content):
-        if self.rsa_private_key_pem is not None and\
-           self.rsa_private_key_pem != "":
+        if self.authenticator.rsa_private_key_pem is not None and\
+           self.authenticator.rsa_private_key_pem != "":
             private_key = self.get_rsa_private_key(
-                self.rsa_private_key_pem,
-                self.rsa_private_key_password
+                self.authenticator.rsa_private_key_pem,
+                self.authenticator.rsa_private_key_password
             )
             # We assume that the encrypted content
             # comes encoded in base64
@@ -213,10 +213,10 @@ class RemoteUserLoginHandler(BaseHandler):
             return content
 
     def encrypt_content(self, content):
-        if self.rsa_public_key_pem is not None and\
-           self.rsa_public_key_pem != "":
+        if self.authenticator.rsa_public_key_pem is not None and\
+           self.authenticator.rsa_public_key_pem != "":
             public_key = self.get_rsa_public_key(
-                self.rsa_public_key_pem)
+                self.authenticator.rsa_public_key_pem)
 
             encrypted_content = RSATools().encrypt_text_rsa(
                 content, public_key)
