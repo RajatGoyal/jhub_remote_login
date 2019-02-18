@@ -268,7 +268,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 whitelist = self.authenticator.whitelist
                 if whitelist and username in whitelist:
                     self.log.info("Username in whitelist")
-                    match = self.match_token_username(token, username)
+                    match = yield self.match_token_username(token, username)
                     if match is True:
                         self.log.info("Match between token & username")
                         raw_user = self.user_from_username(username)
