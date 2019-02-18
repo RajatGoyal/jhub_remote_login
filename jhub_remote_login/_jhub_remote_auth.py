@@ -68,7 +68,8 @@ class RemoteUserLoginHandler(BaseHandler):
         self.log.info(f"Checking header value: {header_value}")
         if header_value is None or header_value == "":
             return False
-        if self.match_token_username(header_value, username):
+        match = self.match_token_username(header_value, username)
+        if match is True:
             self.log.info(f"AuthRequest True")
             return True
         else:
