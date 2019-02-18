@@ -237,14 +237,6 @@ class RemoteUserAuthenticator(Authenticator):
         config=True
     )
 
-    hub_auth_api_token = Unicode(
-        default_value="",
-        help="""
-        The API token to use when making request to the JHub API
-        """,
-        config=True
-    )
-
     rsa_private_key_pem = Unicode(
         default_value="",
         help="""
