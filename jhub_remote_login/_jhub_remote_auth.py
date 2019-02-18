@@ -47,13 +47,11 @@ class RemoteUserLoginHandler(BaseHandler):
             },
         )
         response = await AsyncHTTPClient().fetch(req)
-        self.log.info(f"user_for_token response: {response}")
         return response
 
     async def match_token_username(self, token, username):
 
         user_retrieved = await self.user_for_token(token)
-        self.log.info(f"match_token_username user_token got: {user_retrieved}")
         if user_retrieved is not None:
             if username == user_retrieved['name']:
                 return True
@@ -65,15 +63,12 @@ class RemoteUserLoginHandler(BaseHandler):
     def check_header_token(self, key, username):
         header_value = self.request.headers.get(key, "")
 
-        self.log.info(f"Checking header value: {header_value}")
         if header_value is None or header_value == "":
             return False
         match = self.match_token_username(header_value, username)
         if match is True:
-            self.log.info(f"AuthRequest True")
             return True
         else:
-            self.log.info(f"AuthRequest false")
             return False
 
     def get_tmp_cookie(self, key, username):
@@ -90,10 +85,8 @@ class RemoteUserLoginHandler(BaseHandler):
                 return False
         '''
         if self.get_cookie(key):
-            self.log.info("Checking cookie: True")
             return True
         else:
-            self.log.info("Checking cookie: False")
             if self.check_header_token(key, username):
                 self._set_cookie(key, username)
                 return True
