@@ -8,24 +8,6 @@ from jupyterhub.services.auth import HubAuth
 # import base64
 
 
-class AuthRequest(HubAuth):
-
-    def initialize(self):
-        self.log.info(f"AuthRequest initialize()")
-        super().initialize()
-        self.log.info(f"api_token: {self.api_token}")
-
-    def match_token_username(self, token, username):
-        self.log.info(f"Beginning match_token_username with token: "
-                      f"{token} & username: {username}")
-        user_token = self.user_for_token(token, use_cache=False)
-        self.log.info(f"match_token_username user_token got: {user_token}")
-        if username == user_token['name']:
-            return True
-        else:
-            return False
-
-
 class RemoteUserLoginHandler(BaseHandler):
     """
     Handler for /login
@@ -54,11 +36,27 @@ class RemoteUserLoginHandler(BaseHandler):
             raise web.HTTPError(401,
                                 "You are not Authenticated to do this (1)")
 
+    def match_token_username(self, token, username):
+
+        auth = HubAuth(api_token=self.authenticator.hub_auth_api_token,
+                       cache_max_age=60)
+        self.log.info(f"api_token match: {self.api_token}")
+        self.log.info(f"Beginning match_token_username with token: "
+                      f"{token} & username: {username}")
+        user_token = auth.user_for_token(token)
+        self.log.info(f"match_token_username user_token got: {user_token}")
+        if username == user_token['name']:
+            return True
+        else:
+            return False
+
     def check_header_token(self, key, username):
         header_value = self.request.headers.get(key, "")
 
         self.log.info(f"Checking header value: {header_value}")
-        if AuthRequest().match_token_username(header_value, username):
+        if header_value is None or header_value == "":
+            return False
+        if self.match_token_username(header_value, username):
             self.log.info(f"AuthRequest True")
             return True
         else:
@@ -223,6 +221,14 @@ class RemoteUserAuthenticator(Authenticator):
         help="""
         The value that should contain the temp
         header/cookie set to help in log in tasks
+        """,
+        config=True
+    )
+
+    hub_auth_api_token = Unicode(
+        default_value="",
+        help="""
+        The API token to use when making request to the JHub API
         """,
         config=True
     )
