@@ -122,6 +122,8 @@ class RemoteUserLoginHandler(BaseHandler):
     async def match_token_username(self, token, username):
         user_retrieved = await self.user_for_token(token)
         if user_retrieved is not None:
+            self.log.info(f"username -> {username}")
+            self.log.info(f"user_retrieved -> {user_retrieved}")
             if username == user_retrieved['name']:
                 return True
             else:
@@ -262,18 +264,18 @@ class RemoteUserLoginHandler(BaseHandler):
                 whitelist = self.authenticator.whitelist
                 if whitelist and username in whitelist:
                     match = self.match_token_username(token, username)
-                    if match is False:
+                    if match is True:
+                        raw_user = self.user_from_username(username)
+                        self.clear_tmp_cookie(self.authenticator.header_user_key)
+                        self.clear_tmp_cookie(self.authenticator.header_token_key)
+                        self.set_login_cookie(raw_user)
+                    else:
                         # The token received and the username don't match
                         # Removing the temp cookies and raising a 401
                         self.clear_tmp_cookie(self.authenticator.header_user_key)
                         self.clear_tmp_cookie(self.authenticator.header_token_key)
                         raise web.HTTPError(401,
                                             "You are not Authenticated to do this (3)")
-                    else:
-                        raw_user = self.user_from_username(username)
-                        self.clear_tmp_cookie(self.authenticator.header_user_key)
-                        self.clear_tmp_cookie(self.authenticator.header_token_key)
-                        self.set_login_cookie(raw_user)
                 else:
                     # The user is not in the whitelist
                     # Removing the temp cookies and raising a 401
