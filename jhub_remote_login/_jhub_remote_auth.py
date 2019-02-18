@@ -52,10 +52,10 @@ class RemoteUserLoginHandler(BaseHandler):
 
     async def match_token_username(self, token, username):
 
-        user_token = await self.user_for_token(token)
-        self.log.info(f"match_token_username user_token got: {user_token}")
-        if user_token is not None:
-            if username == user_token['name']:
+        user_retrieved = await self.user_for_token(token)
+        self.log.info(f"match_token_username user_token got: {user_retrieved}")
+        if user_retrieved is not None:
+            if username == user_retrieved['name']:
                 return True
             else:
                 return False
