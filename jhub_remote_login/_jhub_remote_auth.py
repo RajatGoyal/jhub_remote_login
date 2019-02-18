@@ -109,8 +109,10 @@ class RemoteUserLoginHandler(BaseHandler):
 
     async def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
+        url_api = url_path_join(self.base_url, "api/user")
+        self.log.info(f"url  -> {url_api}")
         req = HTTPRequest(
-            url_path_join(self.base_url, "api/user"),
+            url_api,
             headers={
                 'Authorization': f'token {token}'
             },
@@ -119,7 +121,9 @@ class RemoteUserLoginHandler(BaseHandler):
         return response
 
     async def match_token_username(self, token, username):
+        self.log.info(f"trying to get user_for_token")
         user_retrieved = await self.user_for_token(token)
+        self.log.info(f"user_retrieved -> {user_retrieved}")
         if user_retrieved is not None:
             self.log.info(f"username -> {username}")
             self.log.info(f"user_retrieved -> {user_retrieved}")
