@@ -267,8 +267,10 @@ class RemoteUserLoginHandler(BaseHandler):
 
                 whitelist = self.authenticator.whitelist
                 if whitelist and username in whitelist:
+                    self.log.info("Username in whitelist")
                     match = self.match_token_username(token, username)
                     if match is True:
+                        self.log.info("Match between token & username")
                         raw_user = self.user_from_username(username)
                         self.clear_tmp_cookie(
                             self.authenticator.header_user_key)
@@ -276,6 +278,7 @@ class RemoteUserLoginHandler(BaseHandler):
                             self.authenticator.header_token_key)
                         self.set_login_cookie(raw_user)
                     else:
+                        self.log.info("NO Match between token & username")
                         # The token received and the username don't match
                         # Removing the temp cookies and raising a 401
                         self.clear_tmp_cookie(
