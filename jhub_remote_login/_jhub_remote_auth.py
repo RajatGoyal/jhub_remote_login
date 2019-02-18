@@ -223,11 +223,13 @@ class RemoteUserLoginHandler(BaseHandler):
             if username is None:
                 # If no cookie, check if the header with the username exists
                 self.log.info(
-                    "If no cookie, check if the header with the username exists")
+                    "If no cookie, "
+                    "check if the header with the username exists")
                 username = self.get_header(self.authenticator.header_user_key)
                 if username is None:
-                    raise web.HTTPError(401,
-                                        "You are not Authenticated to do this (1)")
+                    raise web.HTTPError(
+                        401,
+                        "You are not Authenticated to do this (1)")
 
             # Check if the cookie which contains the token exists
             self.log.info(
@@ -239,8 +241,9 @@ class RemoteUserLoginHandler(BaseHandler):
                 # If no cookie, check if the header with the token exists
                 token = self.get_header(self.authenticator.header_token_key)
                 if token is None:
-                    raise web.HTTPError(401,
-                                        "You are not Authenticated to do this (2)")
+                    raise web.HTTPError(
+                        401,
+                        "You are not Authenticated to do this (2)")
 
             if username is not None and username != "" and\
                     token is not None and token != "":
@@ -279,15 +282,17 @@ class RemoteUserLoginHandler(BaseHandler):
                             self.authenticator.header_user_key)
                         self.clear_tmp_cookie(
                             self.authenticator.header_token_key)
-                        raise web.HTTPError(401,
-                                            "You are not Authenticated to do this (3)")
+                        raise web.HTTPError(
+                            401,
+                            "You are not Authenticated to do this (3)")
                 else:
                     # The user is not in the whitelist
                     # Removing the temp cookies and raising a 401
                     self.clear_tmp_cookie(self.authenticator.header_user_key)
                     self.clear_tmp_cookie(self.authenticator.header_token_key)
-                    raise web.HTTPError(401,
-                                        "You are not Authenticated to do this (4)")
+                    raise web.HTTPError(
+                        401,
+                        "You are not Authenticated to do this (4)")
             else:
                 raise web.HTTPError(401,
                                     "You are not Authenticated to do this (5)")
