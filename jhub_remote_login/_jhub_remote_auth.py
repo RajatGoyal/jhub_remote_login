@@ -219,7 +219,6 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return content
 
-    @gen.coroutine
     async def get(self):
 
         raw_user = self.get_current_user()
@@ -230,9 +229,9 @@ class RemoteUserLoginHandler(BaseHandler):
                 # running so that they get a new one. Should hopefully
                 # only end up here if have hit the /restart URL path.
 
-                status = yield raw_user.spawner.poll_and_notify()
+                status = raw_user.spawner.poll_and_notify()
                 if status is None:
-                    yield self.stop_single_user(raw_user)
+                    self.stop_single_user(raw_user)
 
                 # Also force a new user name be generated so don't have
                 # issues with browser caching web pages for anything
@@ -315,7 +314,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 raise web.HTTPError(401,
                                     "You are not Authenticated to do this (4)")
         if raw_user:
-            user = yield gen.maybe_future(self.process_user(raw_user, self))
+            user = self.process_user(raw_user, self)
 
         self.redirect(self.get_argument("next", user.url))
 
