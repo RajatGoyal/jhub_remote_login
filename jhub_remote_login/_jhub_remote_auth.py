@@ -107,8 +107,7 @@ class RemoteUserLoginHandler(BaseHandler):
         self.force_new_server = force_new_server
         self.process_user = process_user
 
-    @gen.coroutine
-    def user_for_token(self, token):
+    async def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
         url_api = url_path_join(self.authenticator.url_hub_api, "user")
         self.log.info(f"url  -> {url_api}")
@@ -118,13 +117,12 @@ class RemoteUserLoginHandler(BaseHandler):
                 'Authorization': f'token {token}'
             },
         )
-        response = yield AsyncHTTPClient().fetch(req)
+        response = await AsyncHTTPClient().fetch(req)
         raise gen.Return(response)
 
-    @gen.coroutine
-    def match_token_username(self, token, username):
+    async def match_token_username(self, token, username):
         self.log.info(f"trying to get user_for_token")
-        user_retrieved = yield self.user_for_token(token)
+        user_retrieved = await self.user_for_token(token)
         self.log.info(f"user_retrieved -> {user_retrieved}")
         if user_retrieved is not None:
             self.log.info(f"username -> {username}")
@@ -197,7 +195,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return content
 
     @gen.coroutine
-    def get(self):
+    async def get(self):
 
         raw_user = self.get_current_user()
 
@@ -274,7 +272,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 whitelist = self.authenticator.whitelist
                 if whitelist and username in whitelist:
                     self.log.info("Username in whitelist")
-                    match = yield self.match_token_username(token, username)
+                    match = await self.match_token_username(token, username)
                     if match is True:
                         self.log.info("Match between token & username")
                         raw_user = self.user_from_username(username)
