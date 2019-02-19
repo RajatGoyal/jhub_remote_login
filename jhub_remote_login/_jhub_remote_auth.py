@@ -241,7 +241,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 # get into a loop.
 
                 self.clear_login_cookie()
-                return self.redirect('/')
+                self.redirect('/')
 
         else:
             # Check if the cookie which contains the username exists
