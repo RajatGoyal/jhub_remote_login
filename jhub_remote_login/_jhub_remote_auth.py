@@ -292,7 +292,8 @@ class RemoteUserLoginHandler(BaseHandler):
                 # Decrypt the token if the use_encryption variable is True
                 if self.authenticator.use_encryption is True:
                     token = self.decrypt_content(token)
-                user_validated = await self.validate_user_token(token, username)
+                user_validated = await self.validate_user_token(token,
+                                                                username)
                 if user_validated is True:
                     self.log.info("Match between token & username")
                     raw_user = self.user_from_username(username)
