@@ -110,7 +110,7 @@ class RemoteUserLoginHandler(BaseHandler):
     @gen.coroutine
     def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
-        url_api = url_path_join(self.base_url, "/hub/api/user")
+        url_api = url_path_join(self.authenticator.url_hub_api, "user")
         self.log.info(f"url  -> {url_api}")
         req = HTTPRequest(
             url_api,
@@ -347,6 +347,14 @@ class RemoteUserAuthenticator(Authenticator):
         help="""
         The name of the temp header/cookie set to save the token
         that helps in the log in tasks
+        """,
+        config=True
+    )
+
+    url_hub_api = Unicode(
+        default_value="/hub/api/",
+        help="""
+        The URL to use when requesting endpoints from the Hub API
         """,
         config=True
     )
