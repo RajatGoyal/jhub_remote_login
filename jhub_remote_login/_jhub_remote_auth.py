@@ -1,5 +1,5 @@
 from traitlets import Bool, Unicode
-from tornado import gen, web
+from tornado import web
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
