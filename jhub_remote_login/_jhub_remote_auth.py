@@ -118,7 +118,7 @@ class RemoteUserLoginHandler(BaseHandler):
             },
         )
         response = await AsyncHTTPClient().fetch(req)
-        raise gen.Return(response)
+        return response
 
     async def match_token_username(self, token, username):
         self.log.info(f"trying to get user_for_token")
@@ -128,11 +128,11 @@ class RemoteUserLoginHandler(BaseHandler):
             self.log.info(f"username -> {username}")
             self.log.info(f"user_retrieved -> {user_retrieved}")
             if username == user_retrieved['name']:
-                raise gen.Return(True)
+                return True
             else:
-                raise gen.Return(False)
+                return False
         else:
-            raise gen.Return(False)
+            return False
 
     def get_header(self, key):
         header_value = self.request.headers.get(key, "")
@@ -217,7 +217,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 # get into a loop.
 
                 self.clear_login_cookie()
-                return self.redirect('/')
+                yield self.redirect('/')
 
         else:
             # Check if the cookie which contains the username exists
