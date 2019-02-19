@@ -197,8 +197,15 @@ class RemoteUserLoginHandler(BaseHandler):
                 self.authenticator.rsa_private_key_password
             )
 
+            # The content variable is a string encoded in base64.
+            # To pass a byte() type to the encription function, we should
+            # decode the content using utf-8 and later using base64.
+            b64decoded_content = base64.b64decode(
+                content
+            )
+
             decrypted_content = RSATools().decrypt_text_rsa(
-                content, private_key)
+                b64decoded_content, private_key)
             return decrypted_content
         else:
             return content
@@ -211,7 +218,11 @@ class RemoteUserLoginHandler(BaseHandler):
 
             encrypted_content = RSATools().encrypt_text_rsa(
                 content, public_key)
-            return encrypted_content
+
+            # The output from this function will be a string. To do that, the
+            # encrypted variable is encoded to b64 and later decoded to utf-8
+            b64_encryptedMessage = base64.b64encode(encrypted_content)
+            return b64_encryptedMessage.decode("utf-8")
         else:
             return content
 
