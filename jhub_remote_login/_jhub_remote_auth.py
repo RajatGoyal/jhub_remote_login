@@ -53,8 +53,7 @@ class RSATools():
 
         return pem_private, pem_public
 
-    def encrypt_text_rsa(self, plain_text, public_key):
-
+    def encrypt_text_rsa(self, plain_text: str, public_key):
         ciphertext = public_key.encrypt(plain_text.encode("utf-8"),
                                         padding.OAEP(
                                             mgf=padding.MGF1(
@@ -180,13 +179,13 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
-    def get_rsa_private_key(self, private_key_pem, private_key_password):
+    def get_rsa_private_key(self, private_key_pem: str, private_key_password: str):
         private_key = RSATools().load_private_key_pem_variable(
             private_key_pem.encode('utf-8'), private_key_password)
         return private_key
 
-    def get_rsa_public_key(self, public_key_pem):
-        public_key = RSATools().load_private_key_pem_variable(
+    def get_rsa_public_key(self, public_key_pem: str):
+        public_key = RSATools().load_public_key_pem_variable(
             public_key_pem.encode('utf-8'))
         return public_key
 
@@ -197,10 +196,9 @@ class RemoteUserLoginHandler(BaseHandler):
                 self.authenticator.rsa_private_key_pem,
                 self.authenticator.rsa_private_key_password
             )
-            # We assume that the encrypted content
-            # comes encoded in base64
+
             decrypted_content = RSATools().decrypt_text_rsa(
-                base64.b64decode(content), private_key)
+                content, private_key)
             return decrypted_content
         else:
             return content
@@ -213,9 +211,7 @@ class RemoteUserLoginHandler(BaseHandler):
 
             encrypted_content = RSATools().encrypt_text_rsa(
                 content, public_key)
-            # We encode the encrypted content in base64
-            encrypted_content_b64 = base64.b64encode(encrypted_content)
-            return encrypted_content_b64
+            return encrypted_content
         else:
             return content
 
@@ -292,6 +288,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 # Decrypt the token if the use_encryption variable is True
                 if self.authenticator.use_encryption is True:
                     token = self.decrypt_content(token)
+
                 user_validated = await self.validate_user_token(token,
                                                                 username)
                 if user_validated is True:
