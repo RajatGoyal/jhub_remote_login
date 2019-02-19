@@ -307,7 +307,7 @@ class RemoteUserLoginHandler(BaseHandler):
                     #    self.authenticator.header_user_key)
                     # self.clear_tmp_cookie(
                     #    self.authenticator.header_token_key)
-                    return web.HTTPError(
+                    raise web.HTTPError(
                         401,
                         "You are not Authenticated to do this (3)")
             else:
