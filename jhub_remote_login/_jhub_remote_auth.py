@@ -142,9 +142,9 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
-    def validate_user_token(self, token, username):
+    async def validate_user_token(self, token, username):
         check_whitelist = self.check_username_whitelist(username)
-        check_token_user = self.match_token_username(token, username)
+        check_token_user = await self.match_token_username(token, username)
 
         if check_whitelist is False:
             self.log.info("Username NOT in whitelist")
@@ -292,8 +292,8 @@ class RemoteUserLoginHandler(BaseHandler):
                 # Decrypt the token if the use_encryption variable is True
                 if self.authenticator.use_encryption is True:
                     token = self.decrypt_content(token)
-
-                if self.validate_user_token(token, username) is True:
+                user_validated = yield gen.maybe_future(self.validate_user_token(token, username))
+                if user_validated is True:
                     self.log.info("Match between token & username")
                     raw_user = self.user_from_username(username)
                     self.clear_tmp_cookie(
