@@ -219,6 +219,7 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return content
 
+    @gen.coroutine
     async def get(self):
 
         raw_user = self.get_current_user()
