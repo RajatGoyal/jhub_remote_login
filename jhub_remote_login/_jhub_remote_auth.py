@@ -134,6 +134,30 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
+    def check_username_whitelist(self, username):
+        whitelist = self.authenticator.whitelist
+        if whitelist and username in whitelist:
+            self.log.info("Username in whitelist")
+            return True
+        else:
+            return False
+
+    def validate_user_token(self, token, username):
+        check_whitelist = self.check_username_whitelist(username)
+        check_token_user = self.match_token_username(token, username)
+
+        if check_whitelist is False:
+            self.log.info("Username NOT in whitelist")
+            return False
+        if check_token_user is False:
+            self.log.info("NO Match between token & username")
+            return False
+
+        if check_whitelist is True and check_token_user is True:
+            return True
+
+        return False
+
     def get_header(self, key):
         header_value = self.request.headers.get(key, "")
         if header_value is None or header_value == "":
@@ -143,10 +167,10 @@ class RemoteUserLoginHandler(BaseHandler):
 
     def get_tmp_cookie(self, key):
         cookie_content = self.get_cookie(key)
-        if cookie_content is not None:
-            return cookie_content
-        else:
+        if cookie_content is None or cookie_content == "":
             return None
+        else:
+            return cookie_content
 
     def clear_tmp_cookie(self, key):
         if self.get_cookie(key):
@@ -195,7 +219,7 @@ class RemoteUserLoginHandler(BaseHandler):
             return content
 
     @gen.coroutine
-    async def get(self):
+    def get(self):
 
         raw_user = self.get_current_user()
 
@@ -217,7 +241,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 # get into a loop.
 
                 self.clear_login_cookie()
-                yield self.redirect('/')
+                return self.redirect('/')
 
         else:
             # Check if the cookie which contains the username exists
@@ -263,46 +287,31 @@ class RemoteUserLoginHandler(BaseHandler):
                     username = self.decrypt_content(username)
 
                 # Set a temp cookie with the token received
-                    self._set_cookie(self.authenticator.header_token_key,
-                                     token)
+                self._set_cookie(self.authenticator.header_token_key,
+                                 token)
                 # Decrypt the token if the use_encryption variable is True
                 if self.authenticator.use_encryption is True:
                     token = self.decrypt_content(token)
 
-                whitelist = self.authenticator.whitelist
-                if whitelist and username in whitelist:
-                    self.log.info("Username in whitelist")
-                    match = await self.match_token_username(token, username)
-                    if match is True:
-                        self.log.info("Match between token & username")
-                        raw_user = self.user_from_username(username)
-                        self.clear_tmp_cookie(
-                            self.authenticator.header_user_key)
-                        self.clear_tmp_cookie(
-                            self.authenticator.header_token_key)
-                        self.set_login_cookie(raw_user)
-                    else:
-                        self.log.info("NO Match between token & username")
-                        # The token received and the username don't match
-                        # Removing the temp cookies and raising a 401
-                        self.clear_tmp_cookie(
-                            self.authenticator.header_user_key)
-                        self.clear_tmp_cookie(
-                            self.authenticator.header_token_key)
-                        raise web.HTTPError(
-                            401,
-                            "You are not Authenticated to do this (3)")
+                if self.validate_user_token(token, username) is True:
+                    self.log.info("Match between token & username")
+                    raw_user = self.user_from_username(username)
+                    self.clear_tmp_cookie(
+                        self.authenticator.header_user_key)
+                    self.clear_tmp_cookie(
+                        self.authenticator.header_token_key)
+                    self.set_login_cookie(raw_user)
                 else:
-                    # The user is not in the whitelist
-                    # Removing the temp cookies and raising a 401
-                    self.clear_tmp_cookie(self.authenticator.header_user_key)
-                    self.clear_tmp_cookie(self.authenticator.header_token_key)
-                    raise web.HTTPError(
+                    self.clear_tmp_cookie(
+                        self.authenticator.header_user_key)
+                    self.clear_tmp_cookie(
+                        self.authenticator.header_token_key)
+                    return web.HTTPError(
                         401,
-                        "You are not Authenticated to do this (4)")
+                        "You are not Authenticated to do this (3)")
             else:
                 raise web.HTTPError(401,
-                                    "You are not Authenticated to do this (5)")
+                                    "You are not Authenticated to do this (4)")
         if raw_user:
             user = yield gen.maybe_future(self.process_user(raw_user, self))
 
