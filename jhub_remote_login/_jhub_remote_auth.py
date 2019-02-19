@@ -219,6 +219,7 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return content
 
+    @gen.coroutine
     async def get(self):
 
         raw_user = self.get_current_user()
@@ -314,7 +315,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 raise web.HTTPError(401,
                                     "You are not Authenticated to do this (4)")
         if raw_user:
-            user = self.process_user(raw_user, self)
+            user = yield gen.maybe_future(self.process_user(raw_user, self))
 
         self.redirect(self.get_argument("next", user.url))
 
