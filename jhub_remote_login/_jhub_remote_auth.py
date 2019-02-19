@@ -10,6 +10,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 import base64
+import json
 
 
 class RSATools():
@@ -118,7 +119,7 @@ class RemoteUserLoginHandler(BaseHandler):
             },
         )
         response = await AsyncHTTPClient().fetch(req)
-        return response
+        return json.loads(response.body.decode('utf8', 'replace'))
 
     async def match_token_username(self, token, username):
         self.log.info(f"trying to get user_for_token")
