@@ -179,7 +179,8 @@ class RemoteUserLoginHandler(BaseHandler):
         else:
             return False
 
-    def get_rsa_private_key(self, private_key_pem: str, private_key_password: str):
+    def get_rsa_private_key(self, private_key_pem: str,
+                            private_key_password: str):
         private_key = RSATools().load_private_key_pem_variable(
             private_key_pem.encode('utf-8'), private_key_password)
         return private_key
