@@ -110,7 +110,7 @@ class RemoteUserLoginHandler(BaseHandler):
     async def user_for_token(self, token):
         """Retrieve the user for a given token, via /hub/api/user"""
         url_api = url_path_join(self.authenticator.url_hub_api, "user")
-        self.log.info(f"url  -> {url_api}")
+        # self.log.info(f"url  -> {url_api}")
         req = HTTPRequest(
             url_api,
             headers={
@@ -121,12 +121,9 @@ class RemoteUserLoginHandler(BaseHandler):
         return json.loads(response.body.decode('utf8', 'replace'))
 
     async def match_token_username(self, token, username):
-        self.log.info(f"trying to get user_for_token")
+        # self.log.info(f"trying to get user_for_token")
         user_retrieved = await self.user_for_token(token)
-        self.log.info(f"user_retrieved -> {user_retrieved}")
         if user_retrieved is not None:
-            self.log.info(f"username -> {username}")
-            self.log.info(f"user_retrieved -> {user_retrieved}")
             if username == user_retrieved['name']:
                 return True
             else:
@@ -137,7 +134,7 @@ class RemoteUserLoginHandler(BaseHandler):
     def check_username_whitelist(self, username):
         whitelist = self.authenticator.whitelist
         if whitelist and username in whitelist:
-            self.log.info("Username in whitelist")
+            # self.log.info("Username in whitelist")
             return True
         else:
             return False
@@ -147,10 +144,10 @@ class RemoteUserLoginHandler(BaseHandler):
         check_token_user = await self.match_token_username(token, username)
 
         if check_whitelist is False:
-            self.log.info("Username NOT in whitelist")
+            # self.log.info("Username NOT in whitelist")
             return False
         if check_token_user is False:
-            self.log.info("NO Match between token & username")
+            # self.log.info("NO Match between token & username")
             return False
 
         if check_whitelist is True and check_token_user is True:
@@ -253,14 +250,14 @@ class RemoteUserLoginHandler(BaseHandler):
 
         else:
             # Check if the cookie which contains the username exists
-            self.log.info(
-                "Check if the cookie which contains the username exists")
+            # self.log.info(
+            #     "Check if the cookie which contains the username exists")
             username = self.get_tmp_cookie(self.authenticator.header_user_key)
             if username is None:
                 # If no cookie, check if the header with the username exists
-                self.log.info(
-                    "If no cookie, "
-                    "check if the header with the username exists")
+                # self.log.info(
+                #     "If no cookie, "
+                #     "check if the header with the username exists")
                 username = self.get_header(self.authenticator.header_user_key)
                 if username is None:
                     raise web.HTTPError(
@@ -268,12 +265,12 @@ class RemoteUserLoginHandler(BaseHandler):
                         "You are not Authenticated to do this (1)")
 
             # Check if the cookie which contains the token exists
-            self.log.info(
-                "Check if the cookie which contains the token exists")
+            # self.log.info(
+            #     "Check if the cookie which contains the token exists")
             token = self.get_tmp_cookie(self.authenticator.header_token_key)
             if token is None:
-                self.log.info(
-                    "If no cookie, check if the header with the token exists")
+                # self.log.info(
+                #     "If no cookie, check if the header with the token exists")
                 # If no cookie, check if the header with the token exists
                 token = self.get_header(self.authenticator.header_token_key)
                 if token is None:
@@ -284,8 +281,8 @@ class RemoteUserLoginHandler(BaseHandler):
             if username is not None and username != "" and\
                     token is not None and token != "":
 
-                self.log.info(
-                    f"Encryption is '{self.authenticator.use_encryption}'")
+                # self.log.info(
+                #     f"Encryption is '{self.authenticator.use_encryption}'")
 
                 # Set a temp cookie with the username received
                 self._set_cookie(self.authenticator.header_user_key,
@@ -304,7 +301,7 @@ class RemoteUserLoginHandler(BaseHandler):
                 user_validated = await self.validate_user_token(token,
                                                                 username)
                 if user_validated is True:
-                    self.log.info("Match between token & username")
+                    # self.log.info("Match between token & username")
                     raw_user = self.user_from_username(username)
                     self.clear_tmp_cookie(
                         self.authenticator.header_user_key)
