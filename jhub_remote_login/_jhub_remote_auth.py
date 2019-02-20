@@ -328,7 +328,7 @@ class RemoteUserLoginHandler(BaseHandler):
 class RemoteUserAuthenticator(Authenticator):
     """
     JupyterHub Authenticator based on information sent in request headers
-    When JupyterHub is configured to use this authenticator, it will check 
+    When JupyterHub is configured to use this authenticator, it will check
     the headers of the incoming HTTP request. It will look for the headers
     username and token (by default). If found, the info stored in each of them
     will be used to validate if the user exists and the token is for that user.
