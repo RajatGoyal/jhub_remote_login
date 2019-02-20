@@ -327,10 +327,12 @@ class RemoteUserLoginHandler(BaseHandler):
 
 class RemoteUserAuthenticator(Authenticator):
     """
-    JupyterHub Authenticator for use with tmpnb.org
-    When JupyterHub is configured to use this authenticator, visiting the home
-    page immediately logs the user in with a randomly generated UUID if they
-    are already not logged in, and spawns a server for them.
+    JupyterHub Authenticator based on information sent in request headers
+    When JupyterHub is configured to use this authenticator, it will check 
+    the headers of the incoming HTTP request. It will look for the headers
+    username and token (by default). If found, the info stored in each of them
+    will be used to validate if the user exists and the token is for that user.
+    If the info from headers is valid, the authenticator will allow the log in.
     """
 
     auto_login = True
