@@ -1,33 +1,24 @@
-.. image:: https://travis-ci.org/cbjuan/jhub_remote_login.svg?branch=master
-    :target: https://travis-ci.org/cbjuan/jhub_remote_login
-
 =========================
 Jupyterhub Authenticators
 =========================
 
-Authenticate to Jupyterhub using an authenticating proxy that can set
-the Remote-User header.
-Also supports for passing additional information to the jupyter user. This includes a
-list of user defined /data headers.
+
+.. image:: https://travis-ci.org/cbjuan/jhub_remote_login.svg?branch=master
+    :target: https://travis-ci.org/cbjuan/jhub_remote_login
+
+
+Authenticate to Jupyterhub using an HTTP headers. 1 to pass the JupyterHub username and 
+other to pass a valid JHub token for that user.
 
 -----------------------------------------
 Architecture and Security Recommendations
 -----------------------------------------
 
-This type of authentication relies on an HTTP header, and a malicious
-client could spoof the REMOTE_USER header.  The recommended architecture for this
-type of authentication requires that an authenticating proxy be placed in front
-of your Jupyterhub.  Your Jupyerhub should **only** be accessible from the proxy
-and **never** directly accessible by a client.  
+This type of authentication relies on an HTTP headers, and a malicious
+client could spoof the REMOTE_USER header.  
 
-This type of access is typically enforced with network access controls.  E.g. in
-a simple case, the host on which the Jupyterhub service accepts incoming requests
-has its host based firewall configured to only accept incoming connections from
-the proxy host.
-
-Further, the authenticating proxy should make sure it removes any REMOTE_USER
-headers from incoming requests and only applies the header to proxied requests
-that have been properly authenticated.
+For that reason, we provide also asymmetric encryption capabilities (RSA-based)
+to pass the username and token.
 
 ------------
 Installation
@@ -46,65 +37,18 @@ Installation from PyPi::
 
 Alternately, you can add the local project folder must be on your PYTHONPATH.
 
--------------
-Configuration
--------------
+## Configuration
 
-You should edit your `jupyterhub_config.py` config file to set the
-authenticator class::
+You should edit your `jupyterhub_config.py` (in the JupyterHub) config file to set the authenticator class and the proper config variables::
 
     c.JupyterHub.authenticator_class = 'jhub_remote_login.RemoteUserAuthenticator'
+    c.Authenticator.whitelist = {'cbjuan'}
+    c.Authenticator.admin_users = {'cbjuan'}
+    c.Authenticator.header_user_key = 'username'
+    c.Authenticator.header_token_key = 'token'
+    c.Authenticator.url_hub_api = 'https://ibm-q-jupyter-hub.us-south.containers.appdomain.cloud/hub/api'
 
-You should be able to start jupyterhub.  The "/login" resource
-will look for the authenticated user name in the HTTP header "Remote-User".
-If found, and not blank, you will be logged in as that user.
-
-Alternatively, you can use `RemoteUserLocalAuthenticator`::
-
-    c.JupyterHub.authenticator_class = 'jhub_remote_login.RemoteUserLocalAuthenticator'
-
-This provides the same authentication functionality but is derived from
-`LocalAuthenticator` and therefore provides features such as the ability
-to add local accounts through the admin interface if configured to do so.
-
---------------------
-Dummy Authentication
---------------------
-
-Provides an option for testing JupyterHub authentication with a dummy authenticator
-that can have a global preset password for any account::
-
-    c.JupyterHub.authenticator_class = 'jhub_remote_login.DummyAuthenticator'
-    c.DummyAuthenticator.password = 'password'
-
-
-Note! Don't use in production.
-
--------------------------------------------------------------
-Remote User Authentication extended with user-defined headers
--------------------------------------------------------------
-
-Provides the capability to supply the jupyterhub user with additional state information
-via the /data path. This adds two base request paths to the jupyterhub web application::
-
-'/login' -> requires a non empty Remote-User header
-'/data' -> requires both an authenticated request and a valid configured header
-
-Before information can be passed to the user via the '/data' path, a list of valid
-headers is required. These preset valid headers are then upon a POST request to the
-'/data' URl appended to the current authenticated jupyterhub user data dictionary. I.e.
-user.data[Header] = HeaderValue
-
-The extended authenticator can be activated by setting the following option in the
-jupyterhub config file::
-
-    c.JupyterHub.authenticator_class = 'jhub_remote_login.DataRemoteUserAuthenticator'
-    # Making 'State' a valid header to pass to /data
-    c.DataRemoteUserAuthenticator.data_headers = ['State']
-
-Beyond providing the custom header possibility, the authenticator also by default
-encodes the Remote-User header with 'b32encode'. The authenticator therefore also provides
-the possibility of storing the actual value for debugging purposes in the user.real_name
-variable via the jupyterhub auth_state mechanism of passing information to
-the spawner as noted at `Authenticators <https://jupyterhub.readthedocs
-.io/en/stable/reference/authenticators.html>`_.
+    c.Authenticator.use_encryption = False
+    c.Authenticator.rsa_private_key_pem = '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIFLTBXBgkqhkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQIZgzl2iM/LbcCAggA\nMAwGCCqGSIb3DQIJBQAwHQYJYIZIAWUDBAEqBBCq9uPHHV/11PcYdX/QpH2dBIIE\n0B1mPFLY9UdYx4eps1XoYnMecvTB+fUNeyA3FkAQfqOswbMAl2vjjiDSudF4gNps\ntXAzUV/OEKXqTN5SXYB/qbw3ePxink5NDduiS6Lu6VvEUa+wKw1vN9sF7HOkQbfq\nsl5z1pitdP1P5/F2yqeoWba38u0dZBVxnLFPv3vf/n26Cj7G3oQCrN/giS1Bnznq\n+TMRNap6UIBa4QF5AjmXsKJqSOA9rc/5rpUUR3hbKFahGIXfSIqFE5eB85Ar5s9s\nH/u2P+ESoZWobc6m51chYJtMqKAtCTUwxjhQuRg3JaDRF8vY4eQ/tXLe7LY6JPc5\nlME7pqRci9qVvuq0DDLUEZ1T5QKWl5SLr/701qNueVK8+Q7MyOjP1ym44Nzl6lV9\n3FvKmHNIuRFzMpceCp9eaUUuIb9D59/rtT/o1Pf5E/4NXEGB0NAhNhg7KalqVrCP\nD/vMfz2CHnc9UUBDUm7GE5VUAKARBBSzOBwhEuU3a5PTuX4PfxITXt4AsNfblK1O\nXZSVv/AIAS1oObdQRcWDtAUb4GJGmUQyOce/lM/JLWmZZEVD3ZxyPVraij3tIDJ/\nAlzgIAnf/SXp3IA7+qvgfABsGfS00XRoKhoJVvVp23ruqUbGbkJMLozMh+q0Tj3X\ncI4IgZjAoxg63WlUTOBJ16p55VtPCVZJ/YEATkej4gKQy+OvtTozDDZ995G8nf7t\n5ebvhlRTSp3mquR64sQX6Qjh5s0gZ4fFCgCXPgU0e3qc6l0t2hxZ7hdpGHzMbZZO\nHLcgrutcBIlT2vFkN9yyvHM8ed/dUVKQAg9pEk0bJuiFDn+sHB69RIRwrgd07FT/\nYmrSE79BJEwjGBT/hjsZcIkVkkORSsuQmU/flGGZ86UajBhFm2Bhjx8UGC8u9e/B\n/T/ZPFYFldbSZPJLEwoCXLGZXnIEEyNnrYiIo29rhrj8XQVp5RnvRsCHI6on4TE3\nw8du3hnOHdbcqBLvIQ+AR73w0kn47nbKVOOFULlduQjAgrL0sI0jTOJ2AnuKp74S\nKjmWhTukSIjMSYQD7S9Ps40/hcMP+FzC4C29AMMAwuRNy0ymhd+3I2aMI1znlIfS\n6Stmuvdfyn8FCqIkY75fhmOyMpP6yOCGKMrKuWdFC+3WtxrY7peVBanXh+ONjyED\n8D1LQOyNKYha3EmsNeKz3jgvVbUnJ3udDistmpqG8yfOZ7yTRSzror2tvbC/ff17\nUdMx22y9S+xZW58vrHKqy9Am665Mi7OSLWgNLY3N/uG66iFvu+loIQOT5cFprOKP\nZmb7ijHOxOXmwPh7G6CdkAYvmLIZoC9sfPYRypQxhx+OMc3fx/9loq6gDb67/Pty\nGRJFkC4KcwhkcSX0IfL2AXKBsMBct93asaTsGmHKBFzOSSZ70+WQvtIIrrslI2Yt\n5ZWeIkkjvbg0JC1Io1fuMtFzVMB+oIvhMEcErOHtktYNd1eWhkfBv/jswAdikyAq\nDEpVdGBx/SdBKBD4RAGJNU3ogD0RKDQk808EPcSsRLT+px47J/K7I/wBGrdG/nJ+\nJI7axu0AjM1tPjiiZfMLIo+9zdMnGIQrBkvFnLDRUehclbfLujAa5rHhyq4vYLEv\nIK+LWk+zJRjGz9ZB90VkoKVTB88hVm4e5sL0dnB9F9IU\n-----END ENCRYPTED PRIVATE KEY-----\n'
+    c.Authenticator.rsa_private_key_password = 'mypassword'
+    c.Authenticator.rsa_public_key_pem = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApbAH3Z397pRp/0peApCX\nPYvyMB1/F79z7BS89FZXiVBbIuw+TZJEfxFxuVfrg3jpWjDCPFnd/g3fG9Alr3JK\nMGOQ+f4r2UfMEZ/Glq52tLw6gsyfBEmn2haH0EQS6FPT6hdzZk3IjVwQ/iMm4+Tz\n3BD+NDXFURR4mopYtgpnbqV60Mbz29JC583w6kFyQHLx+5slBEvZgF5k5YWgmZ49\nCkQfc9zhPVDqzz2m7AuV2/lDrgTtkQmluW/o/XYryfriWc+D74a7/cyQuErEs9gh\nXIAZUPF82bE3VvPX2G1FP3OITO9uf9hqSuYAUfPwaxl1NMv11b/svYwvJPxawPz1\ngQIDAQAB\n-----END PUBLIC KEY-----\n'
