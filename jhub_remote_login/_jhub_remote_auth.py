@@ -270,7 +270,7 @@ class RemoteUserLoginHandler(BaseHandler):
             token = self.get_tmp_cookie(self.authenticator.header_token_key)
             if token is None:
                 # self.log.info(
-                #     "If no cookie, check if the header with the token exists")
+                # "If no cookie, check if the header with the token exists")
                 # If no cookie, check if the header with the token exists
                 token = self.get_header(self.authenticator.header_token_key)
                 if token is None:
@@ -282,7 +282,7 @@ class RemoteUserLoginHandler(BaseHandler):
                     token is not None and token != "":
 
                 # self.log.info(
-                #     f"Encryption is '{self.authenticator.use_encryption}'")
+                #  f"Encryption is '{self.authenticator.use_encryption}'")
 
                 # Set a temp cookie with the username received
                 self._set_cookie(self.authenticator.header_user_key,
