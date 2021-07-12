@@ -1,5 +1,5 @@
 from traitlets import Bool, Unicode
-from tornado import web, gen
+from tornado import web
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
@@ -223,10 +223,10 @@ class RemoteUserLoginHandler(BaseHandler):
             return b64_encryptedMessage.decode("utf-8")
         else:
             return content
-    @gen.coroutine
-    def get(self):
+    
+    async def get(self):
 
-        raw_user = yield self.get_current_user()
+        raw_user = await self.get_current_user()
 
         if raw_user:
             if self.force_new_server and raw_user.running:
