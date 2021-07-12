@@ -226,7 +226,7 @@ class RemoteUserLoginHandler(BaseHandler):
 
     async def get(self):
 
-        raw_user = self.get_current_user()
+        raw_user = yield self.get_current_user()
 
         if raw_user:
             if self.force_new_server and raw_user.running:
@@ -322,7 +322,7 @@ class RemoteUserLoginHandler(BaseHandler):
         if raw_user:
             user = self.process_user(raw_user, self)
 
-        self.redirect(self.get_argument("next", user.url))
+        self.redirect(self.get_next_url(user))
 
 
 class RemoteUserAuthenticator(Authenticator):
