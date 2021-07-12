@@ -322,7 +322,7 @@ class RemoteUserLoginHandler(BaseHandler):
         if raw_user:
             user = self.process_user(raw_user, self)
 
-        self.redirect(self.get_argument("next", user.url))
+        self.redirect(self.get_next_url(user))
 
 
 class RemoteUserAuthenticator(Authenticator):
